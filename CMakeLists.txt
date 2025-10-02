@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(PROJECT_NAME first_opengl_example)
+set(PROJECT_NAME opengl_example)
 project(${PROJECT_NAME})
 
 # --- 추가: 파이썬 찾기 ---
@@ -9,7 +9,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 add_compile_options(/utf-8)
 set(CMAKE_CXX_STANDARD 17)
 
-set(WINDOW_NAME "First OpenGL Example")
+set(WINDOW_NAME "OpenGL Example")
 set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 580)
 
