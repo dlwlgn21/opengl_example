@@ -1,5 +1,5 @@
 #include "Common.h"
-
+#include "Shader.h"
 
 void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 {
@@ -69,8 +69,15 @@ int main(int argc, const char** argv)
         return -1;
     }
 
+
+
     const GLubyte* pGlVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL Context version : {}", reinterpret_cast<const char*>(pGlVersion));
+
+    ShaderUPtr uPtrVertexShader = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
+    ShaderUPtr uPtrFragmentShader = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
+    SPDLOG_INFO("VertexShader ID {}", uPtrVertexShader->Get());
+    SPDLOG_INFO("FragmentShader ID {}", uPtrFragmentShader->Get());
 
     OnFrameBufferSizeChanged(pWindow, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(pWindow, OnFrameBufferSizeChanged);

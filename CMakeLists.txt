@@ -13,7 +13,11 @@ set(WINDOW_NAME "OpenGL Example")
 set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 580)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} 
+    src/main.cpp
+    src/Common.cpp src/Common.h
+    src/Shader.cpp src/Shader.h
+)
 
 # 파이썬 경로를 Dependency 쪽으로 넘겨줄 변수에 저장
 set(PYTHON_EXE "${Python3_EXECUTABLE}")
