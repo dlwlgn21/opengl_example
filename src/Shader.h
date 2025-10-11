@@ -11,11 +11,11 @@ public:
     static ShaderUPtr CreateFromFileOrNull(const std::string& filename, GLenum shaderType);
 
     ~Shader();
-    uint32_t Get() const {return m_shader;}
+    uint32_t GetId() const {return mShaderId;}
 private:
     Shader() {}
-    bool LoadFile(const std::string& filename, GLenum shaderType);
-    uint32_t m_shader { 0 };
+    bool TryLoadFile(const std::string& filename, GLenum shaderType);
+    uint32_t mShaderId { 0 };
 };
 
 #endif // __SHADER_H__

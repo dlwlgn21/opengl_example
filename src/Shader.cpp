@@ -4,7 +4,7 @@ ShaderUPtr Shader::CreateFromFileOrNull(const std::string& filename, GLenum shad
 {
     ShaderUPtr uptrShader = ShaderUPtr(new Shader());
 
-    if (!uptrShader->LoadFile(filename, shaderType))
+    if (!uptrShader->TryLoadFile(filename, shaderType))
     {
         return nullptr;
     }
@@ -13,13 +13,13 @@ ShaderUPtr Shader::CreateFromFileOrNull(const std::string& filename, GLenum shad
 
 Shader::~Shader()
 {
-    if (m_shader)
+    if (mShaderId)
     {
-        glDeleteShader(m_shader);
+        glDeleteShader(mShaderId);
     }
 }
 
-bool Shader::LoadFile(const std::string& filename, GLenum shaderType)
+bool Shader::TryLoadFile(const std::string& filename, GLenum shaderType)
 {
     std::optional<std::string> result = LoadTextFileOrEmpty(filename);
     if (!result.has_value())
@@ -31,17 +31,17 @@ bool Shader::LoadFile(const std::string& filename, GLenum shaderType)
     int32_t codeLength = (int32_t)code.length();
 
     // Create And Compile Shader
-    m_shader = glCreateShader(shaderType);
-    glShaderSource(m_shader, 1, (const GLchar* const*)&codePtr, &codeLength);
-    glCompileShader(m_shader);
+    mShaderId = glCreateShader(shaderType);
+    glShaderSource(mShaderId, 1, (const GLchar* const*)&codePtr, &codeLength);
+    glCompileShader(mShaderId);
 
     // Check Compile Error
     int success = 0;
-    glGetShaderiv(m_shader, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(mShaderId, GL_COMPILE_STATUS, &success);
     if (!success)
     {
         char infoLog[1024];
-        glGetShaderInfoLog(m_shader, 1024, nullptr, infoLog);
+        glGetShaderInfoLog(mShaderId, 1024, nullptr, infoLog);
         SPDLOG_ERROR("Failed to compile Shader : \"{}\"", filename);
         SPDLOG_ERROR("Reason : {}", infoLog);
         return false;
