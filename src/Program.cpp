@@ -41,3 +41,7 @@ bool Program::TryLink(const vector<Shader*>& shaders)
     }
     return true;
 }
+void Program::Use() const
+{
+    glUseProgram(mProgramId);
+}

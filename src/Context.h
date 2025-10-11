@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Shader.h"
 #include "Program.h"
+#include "Buffer.h"
 
 CLASS_PTR(Context)
 class Context
@@ -16,9 +17,9 @@ private:
     Context() = default;
     bool TryInit();
     std::unique_ptr<Program> mProgram;
-    uint32_t mVertexBuffer;
+    std::unique_ptr<Buffer> mVertexBuffer;
+    std::unique_ptr<Buffer> mIndexBuffer;
     uint32_t mVertexArrayObject;
-    uint32_t mIndexBuffer;
 };
 
 #endif //__CONTEXT_H__

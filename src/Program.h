@@ -12,7 +12,7 @@ public:
     static std::unique_ptr<Program> CreateOrNull(const std::vector<Shader*>& shaders);
     ~Program();
     uint32_t GetId() const { return mProgramId; }
-
+    void Use() const;
 private:
     Program() = default;
     bool TryLink(const std::vector<Shader*>& shaders);
