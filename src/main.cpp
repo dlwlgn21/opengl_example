@@ -1,6 +1,4 @@
-#include "Common.h"
-#include "Shader.h"
-#include "Program.h"
+#include "Context.h"
 
 using namespace std;
 
@@ -76,28 +74,26 @@ int main(int argc, const char** argv)
 
     const GLubyte* pGlVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL Context version : {}", reinterpret_cast<const char*>(pGlVersion));
-
-    unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
-    SPDLOG_INFO("VertexShader Id {}", vs->GetId());
-    SPDLOG_INFO("FragmentShader Id {}", fs->GetId());
-    ProgramUPtr program = Program::CreateOrNull({fs.get(), vs.get()});
-    SPDLOG_INFO("Program Id : {}", program->GetId());
-
+    unique_ptr<Context> context = Context::CreateOrNull();
+    if (context == nullptr)
+    {
+        SPDLOG_ERROR("Failded To Create Context");
+        glfwTerminate();
+        return -1;
+    }
 
     OnFrameBufferSizeChanged(pWindow, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(pWindow, OnFrameBufferSizeChanged);
     glfwSetKeyCallback(pWindow, OnKeyEvent);
-    glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(pWindow))
     {
         glfwPollEvents();
-        glClear(GL_COLOR_BUFFER_BIT);
+        context->Render();
         glfwSwapBuffers(pWindow);
     }
-
+    context.reset();
     glfwTerminate();
 
     return 0;

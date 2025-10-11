@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
     src/Common.cpp src/Common.h
     src/Shader.cpp src/Shader.h
     src/Program.cpp src/Program.h
+    src/Context.cpp src/Context.h
 )
 
 # 파이썬 경로를 Dependency 쪽으로 넘겨줄 변수에 저장
