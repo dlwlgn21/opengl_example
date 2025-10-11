@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Program.h"
 #include "Buffer.h"
+#include "VertexLayout.h"
 
 CLASS_PTR(Context)
 class Context
@@ -19,6 +20,7 @@ private:
     std::unique_ptr<Program> mProgram;
     std::unique_ptr<Buffer> mVertexBuffer;
     std::unique_ptr<Buffer> mIndexBuffer;
+    std::unique_ptr<VertexLayout> mVertexLayout;
     uint32_t mVertexArrayObject;
 };
 
