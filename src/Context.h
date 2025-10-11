@@ -18,6 +18,7 @@ private:
     std::unique_ptr<Program> mProgram;
     uint32_t mVertexBuffer;
     uint32_t mVertexArrayObject;
+    uint32_t mIndexBuffer;
 };
 
 #endif //__CONTEXT_H__
