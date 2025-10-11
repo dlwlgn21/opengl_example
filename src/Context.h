@@ -16,6 +16,8 @@ private:
     Context() = default;
     bool TryInit();
     std::unique_ptr<Program> mProgram;
+    uint32_t mVertexBuffer;
+    uint32_t mVertexArrayObject;
 };
 
 #endif //__CONTEXT_H__

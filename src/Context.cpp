@@ -14,6 +14,22 @@ unique_ptr<Context> Context::CreateOrNull()
 
 bool Context::TryInit()
 {
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
+    };
+
+    glGenVertexArrays(1, &mVertexArrayObject);
+    glBindVertexArray(mVertexArrayObject);
+
+    glGenBuffers(1, &mVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer); // GL_ARRAY_BUFFER -> VBO
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, vertices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
     unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
     unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
     if (vs == nullptr || fs == nullptr)
@@ -29,9 +45,6 @@ bool Context::TryInit()
     }
     SPDLOG_INFO("Program Id : {}", mProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
-    uint32_t vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
     return true;
 }
 
@@ -39,5 +52,5 @@ void Context::Render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(mProgram->GetId());
-    glDrawArrays(GL_POINTS, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
