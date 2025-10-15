@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
     src/Context.cpp src/Context.h
     src/Buffer.cpp src/Buffer.h
     src/VertexLayout.cpp src/VertexLayout.h
+    src/Image.h src/Image.cpp
 )
 
 # 파이썬 경로를 Dependency 쪽으로 넘겨줄 변수에 저장
