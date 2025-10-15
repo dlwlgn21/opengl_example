@@ -22,6 +22,7 @@ private:
     std::unique_ptr<Buffer> mIndexBuffer;
     std::unique_ptr<VertexLayout> mVertexLayout;
     uint32_t mVertexArrayObject;
+    uint32_t mTextureId;
 };
 
 #endif //__CONTEXT_H__
