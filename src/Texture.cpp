@@ -37,7 +37,7 @@ void Texture::CreateTexture()
 {
     glGenTextures(1, &mTextureId);
     Bind();
-    SetFilter(GL_LINEAR, GL_LINEAR);
+    SetFilter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     SetWrapMode(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 }
 void Texture::SetTextureFromImg(const Image* pImg)
@@ -63,6 +63,7 @@ void Texture::SetTextureFromImg(const Image* pImg)
         GL_UNSIGNED_BYTE,   // CPU 할당된 이미지 데이터 기술 - image가 하나의 채널을 표현하는데 쓰는 데이터 타입
         pImg->GetData()     // CPU 할당된 이미지 데이터 기술 - 실제 데이터가 들어가 있는 포인터 넘겨줌
     );
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 

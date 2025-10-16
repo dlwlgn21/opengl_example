@@ -23,6 +23,7 @@ private:
     std::unique_ptr<Buffer> mIndexBuffer;
     std::unique_ptr<VertexLayout> mVertexLayout;
     std::unique_ptr<Texture> mTexture;
+    std::unique_ptr<Texture> mTexture2;
     uint32_t mVertexArrayObject;
 };
 

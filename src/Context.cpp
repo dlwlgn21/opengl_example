@@ -52,17 +52,28 @@ bool Context::TryInit()
     SPDLOG_INFO("Program Id : {}", mProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
+    unique_ptr<Image> img2 = Image::LoadOrNull("./Image/awesomeface.png");
+    if (img2 == nullptr)
+    {
+        return false;
+    }
+    
     unique_ptr<Image> img = Image::LoadOrNull("./Image/container.jpg");
     if (img == nullptr)
     {
         return false;
     }
-    SPDLOG_INFO("Image {}x, {}y, {}chnnels", 
-        img->GetWidth(), 
-        img->GetHeight(), 
-        img->GetChannelCount()
-    );
     mTexture = Texture::CreateFromImg(img.get());
+    mTexture2 = Texture::CreateFromImg(img2.get());
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture->GetId());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
+
+    mProgram->Use();
+    glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler1"), 0);
+    glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler2"), 1);
     return true;
 }
 

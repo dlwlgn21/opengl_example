@@ -8,15 +8,19 @@ class Image
 {
 public:
     static std::unique_ptr<Image> LoadOrNull(const std::string& filePath);
+    static std::unique_ptr<Image> CreateOrNull(int width, int height, int channelCount = 4);
     ~Image();
 
     const uint8_t* GetData() const { return mpData; }
     int GetWidth() const { return mWidth; }
     int GetHeight() const { return mHeight; }
     int GetChannelCount() const { return mChannelCount; }
+
+    void SetCheckImg(int gridX, int gridY);
 private:
     Image() = default;
     bool TryLoadWithStb(const std::string& filePath);
+    bool TryAllocate(int width, int height, int channelCount);
     int mWidth{};
     int mHeight{};
     int mChannelCount{};
