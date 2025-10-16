@@ -6,6 +6,7 @@
 #include "Program.h"
 #include "Buffer.h"
 #include "VertexLayout.h"
+#include "Texture.h"
 
 CLASS_PTR(Context)
 class Context
@@ -21,8 +22,8 @@ private:
     std::unique_ptr<Buffer> mVertexBuffer;
     std::unique_ptr<Buffer> mIndexBuffer;
     std::unique_ptr<VertexLayout> mVertexLayout;
+    std::unique_ptr<Texture> mTexture;
     uint32_t mVertexArrayObject;
-    uint32_t mTextureId;
 };
 
 #endif //__CONTEXT_H__

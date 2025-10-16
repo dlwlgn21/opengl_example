@@ -62,26 +62,7 @@ bool Context::TryInit()
         img->GetHeight(), 
         img->GetChannelCount()
     );
-
-    glGenTextures(1, &mTextureId);
-    glBindTexture(GL_TEXTURE_2D, mTextureId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // x coord
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // y coord
-    // CPU -> GPU 복사
-    glTexImage2D(
-        GL_TEXTURE_2D,      // Target
-        0,                  // GPU 쪽의 텍스쳐 데이터 기술 - Mip-Map 레벨값
-        GL_RGB,             // GPU 쪽의 텍스쳐 데이터 기술 - GPU 쪽에서 유지 하려고 하는 채널의 타입
-        img->GetWidth(),    // GPU 쪽의 텍스쳐 데이터 기술
-        img->GetHeight(),   // GPU 쪽의 텍스쳐 데이터 기술
-        0,                  // GPU 쪽의 텍스쳐 데이터 기술 - Border size
-        GL_RGB,             // CPU 할당된 이미지 데이터 기술 - image의 픽셀 타입. 채널
-        GL_UNSIGNED_BYTE,   // CPU 할당된 이미지 데이터 기술 - image가 하나의 채널을 표현하는데 쓰는 데이터 타입
-        img->GetData()      // CPU 할당된 이미지 데이터 기술 - 실제 데이터가 들어가 있는 포인터 넘겨줌
-    );
-
+    mTexture = Texture::CreateFromImg(img.get());
     return true;
 }
 
