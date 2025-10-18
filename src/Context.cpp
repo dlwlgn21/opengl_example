@@ -75,20 +75,15 @@ bool Context::TryInit()
     glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler1"), 0);
     glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler2"), 1);
 
-    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-    // 단위 행렬 기준 (1, 1, 0) 만큼 평행이동 하는 행렬
-    glm::highp_mat4 tMat = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 0.0f));
-    // 단위 행렬 기준 z축으로 90도 만큼 회전하는 행렬
-    glm::highp_mat4 rMat = glm::rotate(
-        glm::mat4(1.0f),
-        glm::radians(90.0f),
-        glm::vec3(0.0f, 0.0f, 1.0f)
+    glm::highp_mat4 transform = glm::translate(
+        glm::rotate(
+            glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
+            glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)
+        ),
+    glm::vec3(1.0f, 0.0f, 0.0f)
     );
-    // 단위 행렬 기준 모든 축에 대해 3배 확대 하는 행렬
-    glm::highp_mat4 sMat = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
-    vec = tMat * rMat * sMat * vec;
-    // Scale : (3, 0, 0) -> Rotate About Z Axis (0, 3, 0) -> Translate 1, 1, 0 (1, 4, 0)
-    SPDLOG_INFO("Transfromed Vec : [{}, {}, {}]", vec.x, vec.y, vec.z);
+    GLint transformLocation = glGetUniformLocation(mProgram->GetId(), "transform");
+    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
     return true;
 }
 
