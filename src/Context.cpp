@@ -16,25 +16,53 @@ unique_ptr<Context> Context::CreateOrNull()
 bool Context::TryInit()
 {
     float vertices[] = {
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // TopRight
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // BotRight
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,// BotLeft
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f// TopLeft
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+
+        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f, 0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
+
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, 0.0f, 0.0f,
     };
+
     uint32_t indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        0,  2,  1,  2,  0,  3,
+        4,  5,  6,  6,  7,  4,
+        8,  9, 10, 10, 11,  8,
+        12, 14, 13, 14, 12, 15,
+        16, 17, 18, 18, 19, 16,
+        20, 22, 21, 22, 20, 23,
     };
 
     mVertexLayout = VertexLayout::Create();
 
-    mVertexBuffer = Buffer::CreateWithDataOrNull(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 32);
+    mVertexBuffer = Buffer::CreateWithDataOrNull(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 24 * 5);
+    mVertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+    mVertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, sizeof(float) * 3);
 
-    mVertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
-    mVertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, sizeof(float) * 3);
-    mVertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, sizeof(float) * 6);
-
-    mIndexBuffer = Buffer::CreateWithDataOrNull(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
+    mIndexBuffer = Buffer::CreateWithDataOrNull(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
     unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
     unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Texture.fs", GL_FRAGMENT_SHADER);
@@ -75,13 +103,35 @@ bool Context::TryInit()
     glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler1"), 0);
     glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler2"), 1);
 
-    glm::highp_mat4 transform = glm::translate(
+    // glm::highp_mat4 transform = glm::translate(
+    //     glm::rotate(
+    //         glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
+    //         glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)
+    //     ),
+    //     glm::vec3(1.0f, 0.0f, 0.0f)
+    // );
+    // GLint transformLocation = glGetUniformLocation(mProgram->GetId(), "transform");
+    // glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+
+    glm::highp_mat4 worldMat = glm::translate(
         glm::rotate(
-            glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
-            glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)
-        ),
-    glm::vec3(1.0f, 0.0f, 0.0f)
+            glm::mat4(1.0f),
+            glm::radians(-55.0f), 
+            glm::vec3(1.0f, 0.0f, 0.0f)
+        ), 
+        glm::vec3(1.0f, 1.0f, 0.0f)
     );
+    glm::highp_mat4 viewMat = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(0.0f, 0.0f, -3.0f)
+    );
+    glm::highp_mat4 projectionMat = glm::perspective(
+        glm::radians(45.0f),
+        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT,
+        0.01f,
+        10.0f
+    );
+    glm::highp_mat4 transform = projectionMat * viewMat * worldMat;
     GLint transformLocation = glGetUniformLocation(mProgram->GetId(), "transform");
     glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
     return true;
@@ -89,7 +139,8 @@ bool Context::TryInit()
 
 void Context::Render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     mProgram->Use();
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
