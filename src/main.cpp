@@ -5,7 +5,9 @@ using namespace std;
 void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 {
     SPDLOG_INFO("FrameBuffer Size Changed: ({} x {})", width, height);
-    glViewport(0, 0, width, height);
+    Context* context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(pWindow));
+    assert(context != nullptr);
+    context->Reshape(width, height);
 }
 
 void OnKeyEvent(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
@@ -26,8 +28,12 @@ void OnKeyEvent(GLFWwindow* pWindow, int key, int scanCode, int action, int mods
     }
 }
 
-
-
+void OnCursorPos(GLFWwindow* pWindow, double x, double y)
+{
+    Context* context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(pWindow));
+    assert(context != nullptr);
+    context->OnMouseMove(x, y);
+}
 
 int main(int argc, const char** argv)
 {
@@ -81,10 +87,11 @@ int main(int argc, const char** argv)
         glfwTerminate();
         return -1;
     }
-
+    glfwSetWindowUserPointer(pWindow, context.get());
     OnFrameBufferSizeChanged(pWindow, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(pWindow, OnFrameBufferSizeChanged);
     glfwSetKeyCallback(pWindow, OnKeyEvent);
+    glfwSetCursorPosCallback(pWindow, OnCursorPos);
 
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(pWindow))

@@ -43,6 +43,43 @@ void Context::ProcessInput(GLFWwindow* pWindow) {
         mCamPos -= cameraSpeed * camUp;
     }
 }
+
+
+void Context::OnMouseMove(double x, double y)
+{
+    static glm::vec2 prevPos = glm::vec2(static_cast<float>(x), static_cast<float>(y));
+    glm::vec2 pos = glm::vec2(static_cast<float>(x), static_cast<float>(y));
+    glm::vec2 deltaPos = pos - prevPos;
+
+    const float CAM_ROT_SPEED = 0.2f;
+    mCamYaw -= deltaPos.x * CAM_ROT_SPEED;
+    mCamPitch -= deltaPos.y * CAM_ROT_SPEED;
+
+    if (mCamYaw < 0.0f)
+    {
+        mCamYaw += 360.0f;
+    }
+    if (mCamYaw > 360.0f)
+    {
+        mCamYaw -= 360.0f;
+    }
+    mCamPitch = glm::clamp<float>(mCamPitch, -89.0f, 89.0f);
+    // if (mCamPitch > 89.0f)
+    // {
+    //     mCamPitch = 89.0f;
+    // }
+    // if (mCamPitch > -89.0f)
+    // {
+    //     mCamPitch = -89.0f;
+    // }
+    prevPos = pos;
+}
+void Context::Reshape(int width, int height)
+{
+    mWidth = width;
+    mHeight = height;
+    glViewport(0, 0, mWidth, mHeight);
+}
 bool Context::TryInit()
 {
     float vertices[] = {
@@ -182,7 +219,14 @@ void Context::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto projection = glm::perspective(glm::radians(45.0f),
-        (float)640 / (float)480, 0.01f, 100.0f);
+        static_cast<float>(mWidth) / mHeight, 0.01f, 100.0f);
+
+
+    mCamFront = glm::rotate(glm::mat4(1.0f),
+                    glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f),
+                    glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
+                glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
 
     glm::highp_mat4 view = glm::lookAt(
         mCamPos, 

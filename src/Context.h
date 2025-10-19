@@ -15,6 +15,10 @@ public:
     static std::unique_ptr<Context> CreateOrNull();
     void Render();
     void ProcessInput(GLFWwindow* pWindow);
+    void Reshape(int width, int height);
+
+    void OnMouseMove(double x, double y);
+
 private:
     Context() = default;
     bool TryInit();
@@ -30,6 +34,12 @@ private:
     glm::vec3 mCamPos { glm::vec3(0.0f, 0.0f, 3.0f) };
     glm::vec3 mCamFront { glm::vec3(0.0f, 0.0f, -1.0f) };
     glm::vec3 mCamUp {glm::vec3(0.0f, 1.0f, 0.0f)};
+    float mCamPitch {};
+    float mCamYaw {};
+
+    // Viewport
+    int mWidth { WINDOW_WIDTH };
+    int mHeight { WINDOW_HEIGHT };
 };
 
 #endif //__CONTEXT_H__
