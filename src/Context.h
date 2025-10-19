@@ -25,6 +25,9 @@ private:
     std::unique_ptr<Texture> mTexture;
     std::unique_ptr<Texture> mTexture2;
     uint32_t mVertexArrayObject;
+
+
+    
 };
 
 #endif //__CONTEXT_H__

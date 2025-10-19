@@ -135,6 +135,7 @@ void Context::Render()
     // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
+
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),
@@ -151,9 +152,15 @@ void Context::Render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto projection = glm::perspective(glm::radians(45.0f),
-        (float)640 / (float)480, 0.01f, 20.0f);
-    auto view = glm::translate(glm::mat4(1.0f),
-        glm::vec3(0.0f, 0.0f, -3.0f));
+        (float)640 / (float)480, 0.01f, 100.0f);
+
+    float angle = static_cast<float>(glfwGetTime()) * glm::pi<float>() * 0.5f;
+    auto x = sinf(angle) * 10.0f;
+    auto z = cosf(angle) * 10.0f;
+    auto camPos = glm::vec3(x, 0.0f, z);
+    auto camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    auto camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::highp_mat4 view = glm::lookAt(camPos, camTarget, camUp);
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         auto& pos = cubePositions[i];
