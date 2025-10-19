@@ -12,7 +12,37 @@ unique_ptr<Context> Context::CreateOrNull()
     }
     return move(context);
 }
+void Context::ProcessInput(GLFWwindow* pWindow) {
+    const float cameraSpeed = 0.05f;
+    if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        mCamPos += cameraSpeed * mCamFront;
+    }
+    if (glfwGetKey(pWindow, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        mCamPos -= cameraSpeed * mCamFront;
+    }
 
+    glm::vec3 camRight = glm::normalize(glm::cross(mCamUp, -mCamFront));
+    if (glfwGetKey(pWindow, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        mCamPos += cameraSpeed * camRight;
+    }
+    if (glfwGetKey(pWindow, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        mCamPos -= cameraSpeed * camRight;    
+    }
+
+    glm::vec3 camUp = glm::normalize(glm::cross(-mCamFront, camRight));
+    if (glfwGetKey(pWindow, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        mCamPos += cameraSpeed * camUp;
+    }
+    if (glfwGetKey(pWindow, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        mCamPos -= cameraSpeed * camUp;
+    }
+}
 bool Context::TryInit()
 {
     float vertices[] = {
@@ -154,13 +184,11 @@ void Context::Render()
     auto projection = glm::perspective(glm::radians(45.0f),
         (float)640 / (float)480, 0.01f, 100.0f);
 
-    float angle = static_cast<float>(glfwGetTime()) * glm::pi<float>() * 0.5f;
-    auto x = sinf(angle) * 10.0f;
-    auto z = cosf(angle) * 10.0f;
-    auto camPos = glm::vec3(x, 0.0f, z);
-    auto camTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    auto camUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::highp_mat4 view = glm::lookAt(camPos, camTarget, camUp);
+    glm::highp_mat4 view = glm::lookAt(
+        mCamPos, 
+        mCamPos + mCamFront, 
+        mCamUp
+    );
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         auto& pos = cubePositions[i];
