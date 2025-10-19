@@ -1,17 +1,19 @@
-#include "Common.h"
 #include "Context.h"
-// #include <imgui_impl_glfw.h>
-// #include <imgui_impl_opengl3.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <spdlog/spdlog.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 using namespace std;
 
-// void OnCharEvent(GLFWwindow* window, unsigned int ch) {
-//     ImGui_ImplGlfw_CharCallback(window, ch);
-// }
+void OnCharEvent(GLFWwindow* window, unsigned int ch) {
+    ImGui_ImplGlfw_CharCallback(window, ch);
+}
 
-// void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
-//     ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
-// }
+void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
+    ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+}
 
 void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 {
@@ -23,7 +25,7 @@ void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 
 void OnKeyEvent(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
 {
-    //ImGui_ImplGlfw_KeyCallback(pWindow, key, scanCode, action, mods);
+    ImGui_ImplGlfw_KeyCallback(pWindow, key, scanCode, action, mods);
     SPDLOG_INFO("key: {}, scanCode {}, action : {}, mods: {}{}{}", 
         key, 
         scanCode,
@@ -49,7 +51,7 @@ void OnCursorPos(GLFWwindow* pWindow, double x, double y)
 
 void OnMouseButton(GLFWwindow* pWindow, int button, int action, int modifier)
 {
-    //ImGui_ImplGlfw_MouseButtonCallback(pWindow, button, action, modifier);  
+    ImGui_ImplGlfw_MouseButtonCallback(pWindow, button, action, modifier);  
     Context* pContext = (Context*)glfwGetWindowUserPointer(pWindow);
     double x, y;
     glfwGetCursorPos(pWindow, &x, &y);
@@ -99,13 +101,15 @@ int main(int argc, const char** argv)
     const GLubyte* pGlVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL Context version : {}", reinterpret_cast<const char*>(pGlVersion));
 
-    // imgui
-    // ImGuiContext* pImguiContext = ImGui::CreateContext();
-    // ImGui::SetCurrentContext(pImguiContext);
-    // ImGui_ImplGlfw_InitForOpenGL(pWindow, false);
-    // ImGui_ImplOpenGL3_Init();
-    // ImGui_ImplOpenGL3_CreateFontsTexture();
-    // ImGui_ImplOpenGL3_CreateDeviceObjects();
+
+
+    // Imgui
+    ImGuiContext* pImguiContext = ImGui::CreateContext();
+    ImGui::SetCurrentContext(pImguiContext);
+    ImGui_ImplGlfw_InitForOpenGL(pWindow, false);
+    ImGui_ImplOpenGL3_Init();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+    ImGui_ImplOpenGL3_CreateDeviceObjects();
 
     // OpenGL Context
     unique_ptr<Context> context = Context::CreateOrNull();
@@ -115,36 +119,38 @@ int main(int argc, const char** argv)
         glfwTerminate();
         return -1;
     }
+
     glfwSetWindowUserPointer(pWindow, context.get());
     OnFrameBufferSizeChanged(pWindow, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(pWindow, OnFrameBufferSizeChanged);
     glfwSetKeyCallback(pWindow, OnKeyEvent);
     glfwSetCursorPosCallback(pWindow, OnCursorPos);
     glfwSetMouseButtonCallback(pWindow, OnMouseButton);
-    // glfwSetCharCallback(pWindow, OnCharEvent);
-    // glfwSetScrollCallback(pWindow, OnScroll);
+    glfwSetCharCallback(pWindow, OnCharEvent);
+    glfwSetScrollCallback(pWindow, OnScroll);
     
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(pWindow))
     {
         glfwPollEvents();
-	    // ImGui_ImplGlfw_NewFrame();
-        // ImGui::NewFrame();
+        //ImGui_ImplOpenGL3_NewFrame();      // <- 추가 권장
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
         
         context->ProcessInput(pWindow);
         context->Render();
 
-        // ImGui::Render();
-        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(pWindow);
     }
     context.reset();
 
-	// ImGui_ImplOpenGL3_DestroyFontsTexture();
-    // ImGui_ImplOpenGL3_DestroyDeviceObjects();
-    // ImGui_ImplOpenGL3_Shutdown();
-    // ImGui_ImplGlfw_Shutdown();
-    // ImGui::DestroyContext(pImguiContext);
+	ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_DestroyDeviceObjects();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(pImguiContext);
 
     glfwTerminate();
     return 0;
