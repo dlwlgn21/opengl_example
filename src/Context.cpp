@@ -12,7 +12,12 @@ unique_ptr<Context> Context::CreateOrNull()
     }
     return move(context);
 }
-void Context::ProcessInput(GLFWwindow* pWindow) {
+void Context::ProcessInput(GLFWwindow* pWindow)
+{
+    if (!mIsCamControl)
+    {
+        return;
+    }
     const float cameraSpeed = 0.05f;
     if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
     {
@@ -47,9 +52,12 @@ void Context::ProcessInput(GLFWwindow* pWindow) {
 
 void Context::OnMouseMove(double x, double y)
 {
-    static glm::vec2 prevPos = glm::vec2(static_cast<float>(x), static_cast<float>(y));
+    if (!mIsCamControl)
+    {
+        return;
+    }
     glm::vec2 pos = glm::vec2(static_cast<float>(x), static_cast<float>(y));
-    glm::vec2 deltaPos = pos - prevPos;
+    glm::vec2 deltaPos = pos - mPrevMousePos;
 
     const float CAM_ROT_SPEED = 0.2f;
     mCamYaw -= deltaPos.x * CAM_ROT_SPEED;
@@ -64,16 +72,26 @@ void Context::OnMouseMove(double x, double y)
         mCamYaw -= 360.0f;
     }
     mCamPitch = glm::clamp<float>(mCamPitch, -89.0f, 89.0f);
-    // if (mCamPitch > 89.0f)
-    // {
-    //     mCamPitch = 89.0f;
-    // }
-    // if (mCamPitch > -89.0f)
-    // {
-    //     mCamPitch = -89.0f;
-    // }
-    prevPos = pos;
+    mPrevMousePos = pos;
 }
+
+void Context::OnMouseButton(int btn, int action, double x, double y)
+{
+    if (btn == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            mPrevMousePos = glm::vec2(static_cast<float>(x), static_cast<float>(y));
+            mIsCamControl = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            mIsCamControl = false;
+        }
+    }
+    
+}
+
 void Context::Reshape(int width, int height)
 {
     mWidth = width;

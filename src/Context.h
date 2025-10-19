@@ -18,6 +18,7 @@ public:
     void Reshape(int width, int height);
 
     void OnMouseMove(double x, double y);
+    void OnMouseButton(int btn, int action, double x, double y);
 
 private:
     Context() = default;
@@ -40,6 +41,10 @@ private:
     // Viewport
     int mWidth { WINDOW_WIDTH };
     int mHeight { WINDOW_HEIGHT };
+
+
+    bool mIsCamControl {};
+    glm::vec2 mPrevMousePos { glm::vec2(0.0f) };
 };
 
 #endif //__CONTEXT_H__

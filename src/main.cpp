@@ -1,3 +1,5 @@
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include "Context.h"
 
 using namespace std;
@@ -30,9 +32,16 @@ void OnKeyEvent(GLFWwindow* pWindow, int key, int scanCode, int action, int mods
 
 void OnCursorPos(GLFWwindow* pWindow, double x, double y)
 {
-    Context* context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(pWindow));
-    assert(context != nullptr);
-    context->OnMouseMove(x, y);
+    Context* pContext = reinterpret_cast<Context*>(glfwGetWindowUserPointer(pWindow));
+    assert(pContext != nullptr);
+    pContext->OnMouseMove(x, y);
+}
+
+void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
+  Context* pContext = (Context*)glfwGetWindowUserPointer(window);
+  double x, y;
+  glfwGetCursorPos(window, &x, &y);
+  pContext->OnMouseButton(button, action, x, y);
 }
 
 int main(int argc, const char** argv)
@@ -92,7 +101,8 @@ int main(int argc, const char** argv)
     glfwSetFramebufferSizeCallback(pWindow, OnFrameBufferSizeChanged);
     glfwSetKeyCallback(pWindow, OnKeyEvent);
     glfwSetCursorPosCallback(pWindow, OnCursorPos);
-
+    glfwSetMouseButtonCallback(pWindow, OnMouseButton);
+    
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(pWindow))
     {
