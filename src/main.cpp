@@ -1,5 +1,5 @@
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+// #include <imgui_impl_glfw.h>
+// #include <imgui_impl_opengl3.h>
 #include "Context.h"
 
 using namespace std;
@@ -84,11 +84,18 @@ int main(int argc, const char** argv)
         glfwTerminate();
         return -1;
     }
-
-
-
     const GLubyte* pGlVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL Context version : {}", reinterpret_cast<const char*>(pGlVersion));
+
+    // imgui
+    // ImGuiContext* pImguiContext = ImGui::CreateContext();
+    // ImGui::SetCurrentContext(pImguiContext);
+    // ImGui_ImplGlfw_InitForOpenGL(pWindow, false);
+    // ImGui_ImplOpenGL3_Init();
+    // ImGui_ImplOpenGL3_CreateFontsTexture();
+    // ImGui_ImplOpenGL3_CreateDeviceObjects();
+
+    // OpenGL Context
     unique_ptr<Context> context = Context::CreateOrNull();
     if (context == nullptr)
     {
@@ -107,11 +114,24 @@ int main(int argc, const char** argv)
     while (!glfwWindowShouldClose(pWindow))
     {
         glfwPollEvents();
+        // ImGui_ImplGlfw_NewFrame();
+        // ImGui::NewFrame();
+        
         context->ProcessInput(pWindow);
         context->Render();
+
+        // ImGui::Render();
+        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(pWindow);
     }
     context.reset();
+
+	// ImGui_ImplOpenGL3_DestroyFontsTexture();
+    // ImGui_ImplOpenGL3_DestroyDeviceObjects();
+    // ImGui_ImplOpenGL3_Shutdown();
+    // ImGui_ImplGlfw_Shutdown();
+    // ImGui::DestroyContext(pImguiContext);
+
     glfwTerminate();
 
     return 0;

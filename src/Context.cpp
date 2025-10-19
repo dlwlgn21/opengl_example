@@ -1,6 +1,6 @@
+//#include <imgui.h>
 #include "Context.h"
 #include "Image.h"
-
 using namespace std;
 
 unique_ptr<Context> Context::CreateOrNull()
@@ -194,32 +194,11 @@ bool Context::TryInit()
 
 void Context::Render()
 {
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // glm::highp_mat4 worldMat = glm::rotate(
-    //         glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
-    //         glm::radians(static_cast<float>(glfwGetTime()) * 120.0f), 
-    //         glm::vec3(1.0f, 0.0f, 0.0f)
-    // );
-    // glm::highp_mat4 viewMat = glm::translate(
-    //     glm::mat4(1.0f),
-    //     glm::vec3(0.0f, 0.0f, -3.0f)
-    // );
-    // glm::highp_mat4 projectionMat = glm::perspective(
-    //     glm::radians(45.0f),
-    //     static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT,
-    //     0.01f,
-    //     10.0f
-    // );
-    // glm::highp_mat4 transform = projectionMat * viewMat * worldMat;
-    // mProgram->SetUniform("transform", transform);
-
-
-
-    // mProgram->Use();
-    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-
+    // if (ImGui::Begin("My First ImGui Window"))
+    // {
+    //     ImGui::Text("This is my first text...");
+    // }
+    // ImGui::End();
 
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
