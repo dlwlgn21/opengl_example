@@ -42,6 +42,7 @@ private:
     int mWidth { WINDOW_WIDTH };
     int mHeight { WINDOW_HEIGHT };
 
+    glm::vec4 mClearColor { glm::vec4(0.1f, 0.2f, 0.3f, 0.0f) };
 
     bool mIsCamControl {};
     glm::vec2 mPrevMousePos { glm::vec2(0.0f) };

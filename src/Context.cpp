@@ -1,6 +1,6 @@
-//#include <imgui.h>
 #include "Context.h"
 #include "Image.h"
+//#include <imgui.h>
 using namespace std;
 
 unique_ptr<Context> Context::CreateOrNull()
@@ -100,6 +100,24 @@ void Context::Reshape(int width, int height)
 }
 bool Context::TryInit()
 {
+    // if (ImGui::Begin("ui window")) 
+    // {
+    //     if (ImGui::ColorEdit4("clear color", glm::value_ptr(mClearColor))) 
+    //     {
+    //         glClearColor(mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a);
+    //     }
+    //     ImGui::Separator();
+    //     ImGui::DragFloat3("camera pos", glm::value_ptr(mCamPos), 0.01f);
+    //     ImGui::DragFloat("camera yaw", &mCamYaw, 0.5f);
+    //     ImGui::DragFloat("camera pitch", &mCamPitch, 0.5f, -89.0f, 89.0f);
+    //     ImGui::Separator();
+    //     if (ImGui::Button("reset camera")) {
+    //         mCamYaw = 0.0f;
+    //         mCamPitch = 0.0f;
+    //         mCamPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    //     }
+    // }
+    // ImGui::End();
     float vertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
         0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
@@ -194,9 +212,9 @@ bool Context::TryInit()
 
 void Context::Render()
 {
-    // if (ImGui::Begin("My First ImGui Window"))
+    // if (ImGui::Begin("my first ImGui window")) 
     // {
-    //     ImGui::Text("This is my first text...");
+    //     ImGui::Text("This is first text...");
     // }
     // ImGui::End();
 

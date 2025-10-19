@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 
 set(PROJECT_NAME opengl_example)
 project(${PROJECT_NAME})
@@ -39,3 +39,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 )
 
 add_dependencies(${PROJECT_NAME} ${DEP_LIST})
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PUBLIC /wd4819)
+endif()

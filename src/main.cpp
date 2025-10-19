@@ -1,8 +1,17 @@
+#include "Common.h"
 #include "Context.h"
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+// #include <imgui_impl_glfw.h>
+// #include <imgui_impl_opengl3.h>
 
 using namespace std;
+
+// void OnCharEvent(GLFWwindow* window, unsigned int ch) {
+//     ImGui_ImplGlfw_CharCallback(window, ch);
+// }
+
+// void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
+//     ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+// }
 
 void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 {
@@ -14,6 +23,7 @@ void OnFrameBufferSizeChanged(GLFWwindow* pWindow, int width, int height)
 
 void OnKeyEvent(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
 {
+    //ImGui_ImplGlfw_KeyCallback(pWindow, key, scanCode, action, mods);
     SPDLOG_INFO("key: {}, scanCode {}, action : {}, mods: {}{}{}", 
         key, 
         scanCode,
@@ -37,11 +47,13 @@ void OnCursorPos(GLFWwindow* pWindow, double x, double y)
     pContext->OnMouseMove(x, y);
 }
 
-void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
-  Context* pContext = (Context*)glfwGetWindowUserPointer(window);
-  double x, y;
-  glfwGetCursorPos(window, &x, &y);
-  pContext->OnMouseButton(button, action, x, y);
+void OnMouseButton(GLFWwindow* pWindow, int button, int action, int modifier)
+{
+    //ImGui_ImplGlfw_MouseButtonCallback(pWindow, button, action, modifier);  
+    Context* pContext = (Context*)glfwGetWindowUserPointer(pWindow);
+    double x, y;
+    glfwGetCursorPos(pWindow, &x, &y);
+    pContext->OnMouseButton(button, action, x, y);
 }
 
 int main(int argc, const char** argv)
@@ -109,12 +121,14 @@ int main(int argc, const char** argv)
     glfwSetKeyCallback(pWindow, OnKeyEvent);
     glfwSetCursorPosCallback(pWindow, OnCursorPos);
     glfwSetMouseButtonCallback(pWindow, OnMouseButton);
+    // glfwSetCharCallback(pWindow, OnCharEvent);
+    // glfwSetScrollCallback(pWindow, OnScroll);
     
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(pWindow))
     {
         glfwPollEvents();
-        // ImGui_ImplGlfw_NewFrame();
+	    // ImGui_ImplGlfw_NewFrame();
         // ImGui::NewFrame();
         
         context->ProcessInput(pWindow);
@@ -133,6 +147,5 @@ int main(int argc, const char** argv)
     // ImGui::DestroyContext(pImguiContext);
 
     glfwTerminate();
-
     return 0;
 }
