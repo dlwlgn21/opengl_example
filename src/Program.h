@@ -13,6 +13,10 @@ public:
     ~Program();
     uint32_t GetId() const { return mProgramId; }
     void Use() const;
+
+    void SetUniform(const std::string& name, int value) const;
+    void SetUniform(const std::string& name, const glm::mat4& value) const;
+
 private:
     Program() = default;
     bool TryLink(const std::vector<Shader*>& shaders);

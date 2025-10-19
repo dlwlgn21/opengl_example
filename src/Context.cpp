@@ -100,26 +100,21 @@ bool Context::TryInit()
     glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
     mProgram->Use();
-    glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler1"), 0);
-    glUniform1i(glGetUniformLocation(mProgram->GetId(), "texSampler2"), 1);
+    mProgram->SetUniform("texSampler1", 0);
+    mProgram->SetUniform("texSampler1", 1);
 
-    // glm::highp_mat4 transform = glm::translate(
-    //     glm::rotate(
-    //         glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
-    //         glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)
-    //     ),
-    //     glm::vec3(1.0f, 0.0f, 0.0f)
-    // );
-    // GLint transformLocation = glGetUniformLocation(mProgram->GetId(), "transform");
-    // glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+    glEnable(GL_DEPTH_TEST);
+    return true;
+}
 
-    glm::highp_mat4 worldMat = glm::translate(
-        glm::rotate(
-            glm::mat4(1.0f),
-            glm::radians(-55.0f), 
+void Context::Render()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glm::highp_mat4 worldMat = glm::rotate(
+            glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 0.0f)),
+            glm::radians(static_cast<float>(glfwGetTime()) * 120.0f), 
             glm::vec3(1.0f, 0.0f, 0.0f)
-        ), 
-        glm::vec3(1.0f, 1.0f, 0.0f)
     );
     glm::highp_mat4 viewMat = glm::translate(
         glm::mat4(1.0f),
@@ -132,15 +127,10 @@ bool Context::TryInit()
         10.0f
     );
     glm::highp_mat4 transform = projectionMat * viewMat * worldMat;
-    GLint transformLocation = glGetUniformLocation(mProgram->GetId(), "transform");
-    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
-    return true;
-}
+    mProgram->SetUniform("transform", transform);
 
-void Context::Render()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
+
+
     mProgram->Use();
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }

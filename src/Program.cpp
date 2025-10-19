@@ -21,6 +21,18 @@ Program::~Program()
     }
 }
 
+void Program::SetUniform(const std::string& name, int value) const
+{
+    GLint location = glGetUniformLocation(mProgramId, name.c_str());
+    glUniform1i(location, value);
+}
+void Program::SetUniform(const std::string& name, const glm::mat4& value) const
+{
+    GLint location = glGetUniformLocation(mProgramId, name.c_str());
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+
 bool Program::TryLink(const vector<Shader*>& shaders)
 {
     mProgramId = glCreateProgram();
