@@ -149,8 +149,8 @@ bool Context::TryInit()
 
     mIndexBuffer = Buffer::CreateWithDataOrNull(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
-    unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Texture.fs", GL_FRAGMENT_SHADER);
+    unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Lighting.vs", GL_VERTEX_SHADER);
+    unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Lighting.fs", GL_FRAGMENT_SHADER);
     if (vs == nullptr || fs == nullptr)
     {
         return false;
@@ -205,13 +205,26 @@ void Context::Render()
         ImGui::DragFloat("camera yaw", &mCamYaw, 0.5f);
         ImGui::DragFloat("camera pitch", &mCamPitch, 0.5f, -89.0f, 89.0f);
         ImGui::Separator();
-        if (ImGui::Button("reset camera")) {
+        if (ImGui::Button("reset camera"))
+        {
             mCamYaw = 0.0f;
             mCamPitch = 0.0f;
             mCamPos = glm::vec3(0.0f, 0.0f, 3.0f);
         }
+        if (ImGui::CollapsingHeader("light")) 
+        {
+            ImGui::ColorEdit3("light color", glm::value_ptr(mLightColor));
+            ImGui::ColorEdit3("object color", glm::value_ptr(mObjectColor));
+            ImGui::SliderFloat("ambient strength", &mAmbientStrengh, 0.0f, 1.0f);
+        }
     }
     ImGui::End();
+
+    mProgram->Use();
+    mProgram->SetUniform("lightColor", mLightColor);
+    mProgram->SetUniform("objectColor", mObjectColor);
+    mProgram->SetUniform("ambientStrength", mAmbientStrengh);
+    
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),

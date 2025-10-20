@@ -46,6 +46,10 @@ private:
 
     bool mIsCamControl {};
     glm::vec2 mPrevMousePos { glm::vec2(0.0f) };
+
+    glm::vec3 mLightColor { glm::vec3(1.0f, 1.0f, 1.0f) };
+    glm::vec3 mObjectColor { glm::vec3(1.0f, 0.5f, 0.0f) };
+    float mAmbientStrengh { 0.1f };
 };
 
 #endif //__CONTEXT_H__
