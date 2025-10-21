@@ -52,6 +52,8 @@ private:
     glm::vec3 mLightColor { glm::vec3(1.0f, 1.0f, 1.0f) };
     glm::vec3 mObjectColor { glm::vec3(1.0f, 0.5f, 0.0f) };
     float mAmbientStrengh { 0.1f };
+    float mSpecularStrength { 0.5f };
+    float mSpecularShininess { 32.0f };
 };
 
 #endif //__CONTEXT_H__

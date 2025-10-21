@@ -219,6 +219,9 @@ void Context::Render()
             ImGui::ColorEdit3("light color", glm::value_ptr(mLightColor));
             ImGui::ColorEdit3("object color", glm::value_ptr(mObjectColor));
             ImGui::SliderFloat("ambient strength", &mAmbientStrengh, 0.0f, 1.0f);
+            ImGui::SliderFloat("specular strength", &mSpecularStrength, 0.0f, 1.0f);
+            ImGui::DragFloat("specular shininess", &mSpecularShininess, 1.0f, 1.0f, 256.0f);
+            
         }
         ImGui::Checkbox("animation", &mIsAnimation);
     }
@@ -260,9 +263,26 @@ void Context::Render()
         glm::translate(glm::mat4(1.0f), mLightPos) *
         glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
+    mProgram->Use();
+    mProgram->SetUniform("viewPos", mCamPos);
+    mProgram->SetUniform("lightPos", mLightPos);
+    mProgram->SetUniform("lightColor", glm::vec3(1.f, 1.0f, 1.0f));
+    mProgram->SetUniform("objectColor", mObjectColor);
+    mProgram->SetUniform("ambientStrength", mAmbientStrengh);
+    mProgram->SetUniform("specularStrength", mSpecularStrength);
+    mProgram->SetUniform("specularShininess", mSpecularShininess);
+    mProgram->SetUniform("transform", projection * view * lightModelTransform);
+    mProgram->SetUniform("modelTransform", lightModelTransform);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-
-
+    mProgram->Use();
+    mProgram->SetUniform("viewPos", mCamPos);
+    mProgram->SetUniform("lightPos", mLightPos);
+    mProgram->SetUniform("lightColor", mLightColor);
+    mProgram->SetUniform("objectColor", mObjectColor);
+    mProgram->SetUniform("ambientStrength", mAmbientStrengh);
+    mProgram->SetUniform("specularStrength", mSpecularStrength);
+    mProgram->SetUniform("specularShininess", mSpecularShininess);
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         glm::vec3& pos = cubePositions[i];
@@ -272,12 +292,6 @@ void Context::Render()
             mIsAnimation ? angle : 0.0f,
             glm::vec3(1.0f, 0.5f, 0.0f));
         glm::highp_mat4 transform = projection * view * model;
-
-        mProgram->Use();
-        mProgram->SetUniform("lightPos", mLightPos);
-        mProgram->SetUniform("lightColor", mLightColor);
-        mProgram->SetUniform("objectColor", mObjectColor);
-        mProgram->SetUniform("ambientStrength", mAmbientStrengh);
         mProgram->SetUniform("transform", transform);
         mProgram->SetUniform("modelTransform", model);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
