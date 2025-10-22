@@ -63,7 +63,7 @@ private:
     struct Material
     {
         std::unique_ptr<Texture> Diffuse;
-        glm::vec3 Specular { glm::vec3(0.5f, 0.5f, 0.5f) };
+        std::unique_ptr<Texture> Specular;
         float Shininess { 32.0f };
     };
     Material mMaterial;

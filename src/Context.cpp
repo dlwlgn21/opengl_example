@@ -200,6 +200,7 @@ float vertices[] = { // pos.xyz, normal.xyz, texcoord.uv
     glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
     mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
+    mMaterial.Specular = Texture::CreateFromImg(Image::LoadOrNull("./image/container2_specular.png").get());
     //mProgram->Use();
     //mProgram->SetUniform("texSampler1", 1);
 
@@ -237,7 +238,6 @@ void Context::Render()
         
         if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
-            ImGui::ColorEdit3("m.specular", glm::value_ptr(mMaterial.Specular));
             ImGui::DragFloat("m.shininess", &mMaterial.Shininess, 1.0f, 1.0f, 256.0f);
         }
         ImGui::Checkbox("animation", &mIsAnimation);
@@ -283,14 +283,6 @@ void Context::Render()
     mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-
-    // mProgram->Use();
-    // mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
-    // mProgram->SetUniform("light.Ambient", mLight.Diffuse);
-    // mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
-    // mProgram->SetUniform("transform", projection * view * lightModelTransform);
-    // mProgram->SetUniform("modelTransform", lightModelTransform);
-    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
     mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
@@ -298,12 +290,15 @@ void Context::Render()
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
     mProgram->SetUniform("material.Diffuse", 0);
-    mProgram->SetUniform("material.Specular", mMaterial.Specular);
+    mProgram->SetUniform("material.Specular", 1);
     mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
 
     glActiveTexture(GL_TEXTURE0);
     mMaterial.Diffuse->Bind();
 
+    glActiveTexture(GL_TEXTURE1);
+    mMaterial.Specular->Bind();
+    
     for (size_t i = 0; i < cubePositions.size(); i++)
     {
         glm::vec3& pos = cubePositions[i];
