@@ -213,15 +213,21 @@ void Context::Render()
             mCamPitch = 0.0f;
             mCamPos = glm::vec3(0.0f, 0.0f, 3.0f);
         }
+
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
-            ImGui::DragFloat3("light pos", glm::value_ptr(mLightPos), 0.01f);
-            ImGui::ColorEdit3("light color", glm::value_ptr(mLightColor));
-            ImGui::ColorEdit3("object color", glm::value_ptr(mObjectColor));
-            ImGui::SliderFloat("ambient strength", &mAmbientStrengh, 0.0f, 1.0f);
-            ImGui::SliderFloat("specular strength", &mSpecularStrength, 0.0f, 1.0f);
-            ImGui::DragFloat("specular shininess", &mSpecularShininess, 1.0f, 1.0f, 256.0f);
-            
+            ImGui::DragFloat3("l.position", glm::value_ptr(mLight.WorldPos), 0.01f);
+            ImGui::ColorEdit3("l.ambient", glm::value_ptr(mLight.Ambient));
+            ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
+            ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
+        }
+        
+        if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
+        {
+            ImGui::ColorEdit3("m.ambient", glm::value_ptr(mMaterial.Ambient));
+            ImGui::ColorEdit3("m.diffuse", glm::value_ptr(mMaterial.Diffuse));
+            ImGui::ColorEdit3("m.specular", glm::value_ptr(mMaterial.Specular));
+            ImGui::DragFloat("m.shininess", &mMaterial.Shininess, 1.0f, 1.0f, 256.0f);
         }
         ImGui::Checkbox("animation", &mIsAnimation);
     }
@@ -248,10 +254,8 @@ void Context::Render()
         static_cast<float>(mWidth) / mHeight, 0.01f, 100.0f);
 
 
-    mCamFront = glm::rotate(glm::mat4(1.0f),
-                    glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f),
-                    glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
+    mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
                 glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
 
     glm::highp_mat4 view = glm::lookAt(
@@ -260,31 +264,27 @@ void Context::Render()
         mCamUp
     );
     glm::highp_mat4 lightModelTransform = 
-        glm::translate(glm::mat4(1.0f), mLightPos) *
+        glm::translate(glm::mat4(1.0f), mLight.WorldPos) *
         glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
     mProgram->Use();
-    mProgram->SetUniform("viewPos", mCamPos);
-    mProgram->SetUniform("lightPos", mLightPos);
-    mProgram->SetUniform("lightColor", glm::vec3(1.f, 1.0f, 1.0f));
-    mProgram->SetUniform("objectColor", mObjectColor);
-    mProgram->SetUniform("ambientStrength", mAmbientStrengh);
-    mProgram->SetUniform("specularStrength", mSpecularStrength);
-    mProgram->SetUniform("specularShininess", mSpecularShininess);
+    mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
+    mProgram->SetUniform("light.Ambient", mLight.Diffuse);
+    mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
     mProgram->SetUniform("transform", projection * view * lightModelTransform);
     mProgram->SetUniform("modelTransform", lightModelTransform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-    mProgram->Use();
-    mProgram->SetUniform("viewPos", mCamPos);
-    mProgram->SetUniform("lightPos", mLightPos);
-    mProgram->SetUniform("lightColor", mLightColor);
-    mProgram->SetUniform("objectColor", mObjectColor);
-    mProgram->SetUniform("ambientStrength", mAmbientStrengh);
-    mProgram->SetUniform("specularStrength", mSpecularStrength);
-    mProgram->SetUniform("specularShininess", mSpecularShininess);
-
-    for (size_t i = 0; i < cubePositions.size(); i++){
+    mProgram->SetUniform("viewWorldPos", mCamPos);
+    mProgram->SetUniform("light.Ambient", mLight.Ambient);
+    mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
+    mProgram->SetUniform("light.Specular", mLight.Specular);
+    mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
+    mProgram->SetUniform("material.Diffuse", mMaterial.Diffuse);
+    mProgram->SetUniform("material.Specular", mMaterial.Specular);
+    mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
+    for (size_t i = 0; i < cubePositions.size(); i++)
+    {
         glm::vec3& pos = cubePositions[i];
         glm::highp_mat4 model = glm::translate(glm::mat4(1.0f), pos);
         float angle = glm::radians((float)glfwGetTime() * 120.0f + 20.0f * (float)i);

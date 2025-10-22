@@ -48,12 +48,25 @@ private:
     glm::vec2 mPrevMousePos { glm::vec2(0.0f) };
 
     bool mIsAnimation { true };
-    glm::vec3 mLightPos { glm::vec3(3.0f, 3.0f, 3.0f) };
-    glm::vec3 mLightColor { glm::vec3(1.0f, 1.0f, 1.0f) };
-    glm::vec3 mObjectColor { glm::vec3(1.0f, 0.5f, 0.0f) };
-    float mAmbientStrengh { 0.1f };
-    float mSpecularStrength { 0.5f };
-    float mSpecularShininess { 32.0f };
+    // light parameter
+    struct Light
+    {
+        glm::vec3 WorldPos { glm::vec3(3.0f, 3.0f, 3.0f) };
+        glm::vec3 Ambient { glm::vec3(0.1f, 0.1f, 0.1f) };
+        glm::vec3 Diffuse { glm::vec3(0.5f, 0.5f, 0.5f) };
+        glm::vec3 Specular { glm::vec3(1.0f, 1.0f, 1.0f) };
+    };
+    Light mLight;
+
+    // material parameter
+    struct Material
+    {
+        glm::vec3 Ambient { glm::vec3(1.0f, 0.5f, 0.3f) };
+        glm::vec3 Diffuse { glm::vec3(1.0f, 0.5f, 0.3f) };
+        glm::vec3 Specular { glm::vec3(0.5f, 0.5f, 0.5f) };
+        float Shininess { 32.0f };
+    };
+    Material mMaterial;
 };
 
 #endif //__CONTEXT_H__
