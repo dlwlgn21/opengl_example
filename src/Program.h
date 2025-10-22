@@ -10,6 +10,7 @@ class Program
 {
 public:
     static std::unique_ptr<Program> CreateOrNull(const std::vector<Shader*>& shaders);
+    static std::unique_ptr<Program> CreateOrNull(const std::string& vsFilename, const std::string& fsFilename);
     ~Program();
     uint32_t GetId() const { return mProgramId; }
     void Use() const;
@@ -19,7 +20,7 @@ public:
 
     void SetUniform(const std::string& name, const float value) const;
     void SetUniform(const std::string& name, const glm::vec3& value) const;
-
+    void SetUniform(const std::string& name, const glm::vec4& value) const;
 
 private:
     Program() = default;

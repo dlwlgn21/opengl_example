@@ -17,8 +17,7 @@ uniform Light light;
 
 struct Material
 {
-    vec3 Ambient;
-    vec3 Diffuse;
+    sampler2D Diffuse;
     vec3 Specular;
     float Shininess;
 };
@@ -26,11 +25,13 @@ uniform Material material;
 
 void main()
 {
-    vec3 ambient = material.Ambient * light.Ambient;
+    vec3 texColor = texture2D(material.Diffuse, TexCoord).xyz;
+    vec3 ambient = texColor * light.Ambient;
+
     vec3 lightDir = normalize(light.WorldPos - WorldPos);
     vec3 pixelNorm = normalize(WorldNormal);
     float diff = max(dot(pixelNorm, lightDir), 0.0);
-    vec3 diffuse = diff * material.Diffuse * light.Diffuse;
+    vec3 diffuse = diff * texColor * light.Diffuse;
  
     vec3 viewDir = normalize(viewWorldPos - WorldPos);
     vec3 reflectDir = reflect(-lightDir, pixelNorm);

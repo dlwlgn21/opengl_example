@@ -164,7 +164,20 @@ float vertices[] = { // pos.xyz, normal.xyz, texcoord.uv
     {
         return false;
     }
-    SPDLOG_INFO("Program Id : {}", mProgram->GetId());
+    unique_ptr<Shader> sVs = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
+    unique_ptr<Shader> sFs = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
+    if (sVs == nullptr || sFs == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Simple VertexShader Id {}", sVs->GetId());
+    SPDLOG_INFO("Simple FragmentShader Id {}", sFs->GetId());
+    mSimpleProgram = Program::CreateOrNull({sVs.get(), sFs.get()});
+    if (mSimpleProgram == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Program Id : {}", mSimpleProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
     unique_ptr<Image> img2 = Image::LoadOrNull("./Image/awesomeface.png");
@@ -186,9 +199,10 @@ float vertices[] = { // pos.xyz, normal.xyz, texcoord.uv
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
+    mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
     mProgram->Use();
-    mProgram->SetUniform("texSampler1", 0);
-    mProgram->SetUniform("texSampler1", 1);
+    mProgram->SetUniform("material.Diffuse", 0);
+    //mProgram->SetUniform("texSampler1", 1);
 
     glEnable(GL_DEPTH_TEST);
     return true;
@@ -225,7 +239,6 @@ void Context::Render()
         if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
             ImGui::ColorEdit3("m.ambient", glm::value_ptr(mMaterial.Ambient));
-            ImGui::ColorEdit3("m.diffuse", glm::value_ptr(mMaterial.Diffuse));
             ImGui::ColorEdit3("m.specular", glm::value_ptr(mMaterial.Specular));
             ImGui::DragFloat("m.shininess", &mMaterial.Shininess, 1.0f, 1.0f, 256.0f);
         }
@@ -267,22 +280,33 @@ void Context::Render()
         glm::translate(glm::mat4(1.0f), mLight.WorldPos) *
         glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-    mProgram->Use();
-    mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
-    mProgram->SetUniform("light.Ambient", mLight.Diffuse);
-    mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
-    mProgram->SetUniform("transform", projection * view * lightModelTransform);
-    mProgram->SetUniform("modelTransform", lightModelTransform);
+    mSimpleProgram->Use();
+    mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+    mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+
+    // mProgram->Use();
+    // mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
+    // mProgram->SetUniform("light.Ambient", mLight.Diffuse);
+    // mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
+    // mProgram->SetUniform("transform", projection * view * lightModelTransform);
+    // mProgram->SetUniform("modelTransform", lightModelTransform);
+    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
+    mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
+    mProgram->SetUniform("material.Diffuse", 0);
     mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
-    mProgram->SetUniform("material.Diffuse", mMaterial.Diffuse);
     mProgram->SetUniform("material.Specular", mMaterial.Specular);
     mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
+
+    glActiveTexture(GL_TEXTURE0);
+    mMaterial.Diffuse->Bind();
+
     for (size_t i = 0; i < cubePositions.size(); i++)
     {
         glm::vec3& pos = cubePositions[i];

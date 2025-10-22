@@ -13,6 +13,23 @@ unique_ptr<Program> Program::CreateOrNull(const vector<Shader*>& shaders)
     return move(program);
 }
 
+unique_ptr<Program> Program::CreateOrNull(const std::string& vsFilename, const std::string& fsFilename)
+{
+  unique_ptr<Shader> vs = Shader::CreateFromFileOrNull(vsFilename, GL_VERTEX_SHADER);
+  unique_ptr<Shader> fs = Shader::CreateFromFileOrNull(fsFilename, GL_FRAGMENT_SHADER);
+  
+  if (vs == nullptr || fs == nullptr)
+  {
+      return nullptr;
+  }
+  return std::move(CreateOrNull({vs.get(), fs.get()}));
+}
+
+void Program::SetUniform(const std::string& name, const glm::vec4& value) const
+{
+  auto loc = glGetUniformLocation(mProgramId, name.c_str());
+  glUniform4fv(loc, 1, glm::value_ptr(value));
+}
 Program::~Program()
 {
     if (mProgramId)
