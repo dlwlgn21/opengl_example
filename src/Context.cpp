@@ -200,8 +200,7 @@ float vertices[] = { // pos.xyz, normal.xyz, texcoord.uv
     glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
     mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
-    mProgram->Use();
-    mProgram->SetUniform("material.Diffuse", 0);
+    //mProgram->Use();
     //mProgram->SetUniform("texSampler1", 1);
 
     glEnable(GL_DEPTH_TEST);
