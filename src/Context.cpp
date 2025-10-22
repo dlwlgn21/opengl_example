@@ -238,7 +238,6 @@ void Context::Render()
         
         if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
-            ImGui::ColorEdit3("m.ambient", glm::value_ptr(mMaterial.Ambient));
             ImGui::ColorEdit3("m.specular", glm::value_ptr(mMaterial.Specular));
             ImGui::DragFloat("m.shininess", &mMaterial.Shininess, 1.0f, 1.0f, 256.0f);
         }
@@ -300,7 +299,6 @@ void Context::Render()
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
     mProgram->SetUniform("material.Diffuse", 0);
-    mProgram->SetUniform("material.Ambient", mMaterial.Ambient);
     mProgram->SetUniform("material.Specular", mMaterial.Specular);
     mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
 
