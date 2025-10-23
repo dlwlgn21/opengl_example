@@ -230,7 +230,7 @@ void Context::Render()
 
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
-            ImGui::DragFloat3("l.position", glm::value_ptr(mLight.WorldPos), 0.01f);
+            ImGui::DragFloat3("l.Direction", glm::value_ptr(mLight.Direction), 0.01f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(mLight.Ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
@@ -244,8 +244,6 @@ void Context::Render()
     }
     ImGui::End();
 
-
-    
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),
@@ -264,7 +262,6 @@ void Context::Render()
     glm::highp_mat4 projection = glm::perspective(glm::radians(45.0f),
         static_cast<float>(mWidth) / mHeight, 0.01f, 100.0f);
 
-
     mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                 glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
                 glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
@@ -274,18 +271,18 @@ void Context::Render()
         mCamPos + mCamFront, 
         mCamUp
     );
-    glm::highp_mat4 lightModelTransform = 
-        glm::translate(glm::mat4(1.0f), mLight.WorldPos) *
-        glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    // glm::highp_mat4 lightModelTransform = 
+    //     glm::translate(glm::mat4(1.0f), mLight.WorldPos) *
+    //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-    mSimpleProgram->Use();
-    mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-    mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    // mSimpleProgram->Use();
+    // mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+    // mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
-    mProgram->SetUniform("light.WorldPos", mLight.WorldPos);
+    mProgram->SetUniform("light.Direction", mLight.Direction);
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);

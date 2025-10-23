@@ -8,7 +8,7 @@ out vec4 FragColor;
 uniform vec3 viewWorldPos;
 struct Light
 {
-    vec3 WorldPos;
+    vec3 Direction;
     vec3 Ambient;
     vec3 Diffuse;
     vec3 Specular;
@@ -28,7 +28,7 @@ void main()
     vec3 texColor = texture2D(material.Diffuse, TexCoord).xyz;
     vec3 ambient = texColor * light.Ambient;
 
-    vec3 lightDir = normalize(light.WorldPos - WorldPos);
+    vec3 lightDir = normalize(-light.Direction);
     vec3 pixelNorm = normalize(WorldNormal);
     float diff = max(dot(pixelNorm, lightDir), 0.0);
     vec3 diffuse = diff * texColor * light.Diffuse;
