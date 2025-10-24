@@ -271,19 +271,21 @@ void Context::Render()
                 glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
                 glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
 
+    mLight.Pos = mCamPos;
+    mLight.Dir = mCamFront;
     glm::highp_mat4 view = glm::lookAt(
         mCamPos, 
         mCamPos + mCamFront, 
         mCamUp
     );
-    glm::highp_mat4 lightModelTransform = 
-        glm::translate(glm::mat4(1.0f), mLight.Pos) *
-        glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    // glm::highp_mat4 lightModelTransform = 
+    //     glm::translate(glm::mat4(1.0f), mLight.Pos) *
+    //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-    mSimpleProgram->Use();
-    mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-    mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    // mSimpleProgram->Use();
+    // mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+    // mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);

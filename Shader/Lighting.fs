@@ -34,7 +34,7 @@ void main()
 
     vec3 texColor = texture2D(material.Diffuse, TexCoord).xyz;
     vec3 ambient = texColor * light.Ambient;
-    vec3 lightDir = normalize(light.Pos - WorldPos) / dist;
+    vec3 lightDir = (light.Pos - WorldPos) / dist;
 
     vec3 result = ambient;
     float cosTheta = dot(lightDir, normalize(-light.Dir));
