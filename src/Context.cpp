@@ -233,7 +233,7 @@ void Context::Render()
             //ImGui::DragFloat3("l.Direction", glm::value_ptr(mLight.Direction), 0.01f);
             ImGui::DragFloat3("l.Pos", glm::value_ptr(mLight.Pos), 0.01f);
             ImGui::DragFloat3("l.Dir", glm::value_ptr(mLight.Dir), 0.01f);
-            ImGui::DragFloat("l.Cutoff", &mLight.Cutoff, 0.5f, 0.0f, 90.0f);
+            ImGui::DragFloat2("l.Cutoff", glm::value_ptr(mLight.Cutoff), 0.5f, 0.0f, 90.0f);
             ImGui::DragFloat("l.Dist", &mLight.Dist, 0.5f, 0.0f, 3000.0f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(mLight.Ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
@@ -290,7 +290,9 @@ void Context::Render()
     //mProgram->SetUniform("light.Direction", mLight.Direction);
     mProgram->SetUniform("light.Pos", mLight.Pos);
     mProgram->SetUniform("light.Dir", mLight.Dir);
-    mProgram->SetUniform("light.Cutoff", cosf(glm::radians(mLight.Cutoff)));
+	mProgram->SetUniform("light.Cutoff", glm::vec2(
+        cosf(glm::radians(mLight.Cutoff[0])),
+        cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
     mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
