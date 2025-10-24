@@ -42,5 +42,5 @@ using klassName ## ShPtr = std::shared_ptr<klassName>; \
 using klassName ## WPtr = std::weak_ptr<klassName>;
 
 std::optional<std::string> LoadTextFileOrEmpty(const std::string& filename);
-
+glm::vec3 GetAttCoeff(float distance);
 #endif // __COMMON_H__

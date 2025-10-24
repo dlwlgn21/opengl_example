@@ -230,7 +230,11 @@ void Context::Render()
 
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) 
         {
-            ImGui::DragFloat3("l.Direction", glm::value_ptr(mLight.Direction), 0.01f);
+            //ImGui::DragFloat3("l.Direction", glm::value_ptr(mLight.Direction), 0.01f);
+            ImGui::DragFloat3("l.Pos", glm::value_ptr(mLight.Pos), 0.01f);
+            ImGui::DragFloat3("l.Dir", glm::value_ptr(mLight.Dir), 0.01f);
+            ImGui::DragFloat("l.Cutoff", &mLight.Cutoff, 0.5f, 0.0f, 90.0f);
+            ImGui::DragFloat("l.Dist", &mLight.Dist, 0.5f, 0.0f, 3000.0f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(mLight.Ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
@@ -244,7 +248,8 @@ void Context::Render()
     }
     ImGui::End();
 
-    std::vector<glm::vec3> cubePositions = {
+    std::vector<glm::vec3> cubePositions = 
+    {
         glm::vec3( 0.0f, 0.0f, 0.0f),
         glm::vec3( 2.0f, 5.0f, -15.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -271,18 +276,22 @@ void Context::Render()
         mCamPos + mCamFront, 
         mCamUp
     );
-    // glm::highp_mat4 lightModelTransform = 
-    //     glm::translate(glm::mat4(1.0f), mLight.WorldPos) *
-    //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    glm::highp_mat4 lightModelTransform = 
+        glm::translate(glm::mat4(1.0f), mLight.Pos) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-    // mSimpleProgram->Use();
-    // mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-    // mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    mSimpleProgram->Use();
+    mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+    mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
-    mProgram->SetUniform("light.Direction", mLight.Direction);
+    //mProgram->SetUniform("light.Direction", mLight.Direction);
+    mProgram->SetUniform("light.Pos", mLight.Pos);
+    mProgram->SetUniform("light.Dir", mLight.Dir);
+    mProgram->SetUniform("light.Cutoff", cosf(glm::radians(mLight.Cutoff)));
+    mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
