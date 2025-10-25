@@ -95,7 +95,7 @@ void Model::ProcessMesh(aiMesh* pMesh, const aiScene* pScene)
     unique_ptr<Mesh> glMesh = Mesh::CreateOrNull(vertices, indices, GL_TRIANGLES);
     if (pMesh->mMaterialIndex >= 0)
     {
-        glMesh->SetMaterial(std::move(mMaterials[pMesh->mMaterialIndex]));
+        glMesh->SetMaterial(mMaterials[pMesh->mMaterialIndex].get());
     }
     mMeshs.push_back(std::move(glMesh));
 }

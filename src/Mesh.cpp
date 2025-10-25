@@ -80,9 +80,9 @@ unique_ptr<Mesh> Mesh::MakeBoxOrNull()
 void Mesh::Draw(const Program* pProgram) const
 {
     mVertexLayout->Bind();
-    if (mMaterial != nullptr)
+    if (mpMaterial != nullptr)
     {
-        mMaterial->SetToProgram(pProgram);
+        mpMaterial->SetToProgram(pProgram);
     }
     glDrawElements(mPrimitiveType, mIndexBuffer->GetCount(), GL_UNSIGNED_INT, 0);
 }

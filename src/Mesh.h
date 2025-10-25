@@ -41,8 +41,8 @@ public:
     const VertexLayout* GetVertexLayout() const { return mVertexLayout.get(); }
     Buffer* GetVertexBuffer() const { return mVertexBuffer.get(); }
     Buffer* GetIndexBuffer() const { return mIndexBuffer.get(); }
-    void SetMaterial(std::unique_ptr<Material> material) { mMaterial = std::move(material); }
-    Material* GetMaterial() const { return mMaterial.get(); }
+    void SetMaterial(Material* pMaterial) { mpMaterial = pMaterial; }
+    Material* GetMaterial() const { return mpMaterial; }
     void Draw(const Program* pProgram) const;
 
 private:
@@ -53,7 +53,7 @@ private:
     std::unique_ptr<VertexLayout> mVertexLayout;
     std::unique_ptr<Buffer> mVertexBuffer;
     std::unique_ptr<Buffer> mIndexBuffer;
-    std::unique_ptr<Material> mMaterial; 
+    Material* mpMaterial { nullptr }; 
 };
 
 #endif // __MESH_H__
