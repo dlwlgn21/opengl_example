@@ -305,5 +305,5 @@ void Context::Render()
     auto transform = projection * view * modelTransform;
     mProgram->SetUniform("transform", transform);
     mProgram->SetUniform("modelTransform", modelTransform);
-    mModel->Draw();
+    mModel->Draw(mProgram.get());
 }

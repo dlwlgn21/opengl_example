@@ -2,6 +2,27 @@
 
 using namespace std;
 
+void Material::SetToProgram(const Program* program) const
+{
+    int textureCount = 0;
+    if (Diffuse)
+    {
+        glActiveTexture(GL_TEXTURE0 + textureCount);
+        program->SetUniform("material.Diffuse", textureCount);
+        Diffuse->Bind();
+        ++textureCount;
+    }
+    if (Specular) 
+    {
+        glActiveTexture(GL_TEXTURE0 + textureCount);
+        program->SetUniform("material.Specular", textureCount);
+        Specular->Bind();
+        ++textureCount;
+    }
+    glActiveTexture(GL_TEXTURE0);
+    program->SetUniform("material.Shininess", Shininess);
+}
+
 unique_ptr<Mesh> Mesh::CreateOrNull(const vector<Vertex>& vertices, const vector<uint32_t>& indices, uint32_t primitiveType)
 {
     unique_ptr<Mesh> mesh = std::unique_ptr<Mesh>(new Mesh());
@@ -56,9 +77,13 @@ unique_ptr<Mesh> Mesh::MakeBoxOrNull()
     return CreateOrNull(vertices, indices, GL_TRIANGLES);
 }
 
-void Mesh::Draw() const
+void Mesh::Draw(const Program* pProgram) const
 {
     mVertexLayout->Bind();
+    if (mMaterial != nullptr)
+    {
+        mMaterial->SetToProgram(pProgram);
+    }
     glDrawElements(mPrimitiveType, mIndexBuffer->GetCount(), GL_UNSIGNED_INT, 0);
 }
 

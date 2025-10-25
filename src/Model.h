@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "Mesh.h"
+#include "Program.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -16,7 +17,7 @@ public:
 
     int GetMeshCount() const { return (int)mMeshs.size(); }
     Mesh* GetMeshAt(int idx) const { return mMeshs[idx].get(); }
-    void Draw() const;
+    void Draw(const Program* pProgram) const;
 
 private:
     Model() {}
@@ -25,6 +26,7 @@ private:
     void ProcessNodeRecursive(aiNode* pNode, const aiScene* pScene);
         
     std::vector<std::unique_ptr<Mesh>> mMeshs;
+    std::vector<std::unique_ptr<Material>> mMaterials;
 };
 
 #endif // __MODEL_H__

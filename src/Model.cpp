@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "Texture.h"
 
 using namespace std;
 
@@ -23,6 +24,31 @@ bool Model::TryLoadByAssimp(const string& filename)
         return false;
     }
 
+    auto dirname = filename.substr(0, filename.find_last_of("/"));
+    auto LoadTexture = [&](aiMaterial* material, aiTextureType type) -> std::unique_ptr<Texture>
+    {
+        if (material->GetTextureCount(type) <= 0)
+        {
+            return nullptr;
+        }
+        aiString filepath;
+        material->GetTexture(aiTextureType_DIFFUSE, 0, &filepath);
+        unique_ptr<Image> image = Image::LoadOrNull(fmt::format("{}/{}", dirname, filepath.C_Str()));
+        if (image == nullptr)
+        {
+            return nullptr;
+        }
+        return Texture::CreateFromImg(image.get());
+    };
+
+    for (uint32_t i = 0; i < pScene->mNumMaterials; i++)
+    {
+        aiMaterial* pAiMaterial = pScene->mMaterials[i];
+        unique_ptr<Material> glMaterial = Material::Create();
+        glMaterial->Diffuse = LoadTexture(pAiMaterial, aiTextureType_DIFFUSE);
+        glMaterial->Specular = LoadTexture(pAiMaterial, aiTextureType_SPECULAR);
+        mMaterials.push_back(std::move(glMaterial));
+    }
     ProcessNodeRecursive(pScene->mRootNode, pScene);
     return true;
 }
@@ -66,13 +92,18 @@ void Model::ProcessMesh(aiMesh* pMesh, const aiScene* pScene)
         indices[3*i+2] = pMesh->mFaces[i].mIndices[2];
     }
 
-    mMeshs.push_back(Mesh::CreateOrNull(vertices, indices, GL_TRIANGLES));
+    unique_ptr<Mesh> glMesh = Mesh::CreateOrNull(vertices, indices, GL_TRIANGLES);
+    if (pMesh->mMaterialIndex >= 0)
+    {
+        glMesh->SetMaterial(std::move(mMaterials[pMesh->mMaterialIndex]));
+    }
+    mMeshs.push_back(std::move(glMesh));
 }
 
-void Model::Draw() const
+void Model::Draw(const Program* pProgram) const
 {
     for (auto& mesh: mMeshs)
     {
-        mesh->Draw();
+        mesh->Draw(pProgram);
     }
 }
