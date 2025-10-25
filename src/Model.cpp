@@ -32,7 +32,7 @@ bool Model::TryLoadByAssimp(const string& filename)
             return nullptr;
         }
         aiString filepath;
-        material->GetTexture(aiTextureType_DIFFUSE, 0, &filepath);
+        material->GetTexture(type, 0, &filepath);
         unique_ptr<Image> image = Image::LoadOrNull(fmt::format("{}/{}", dirname, filepath.C_Str()));
         if (image == nullptr)
         {
