@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     src/VertexLayout.cpp src/VertexLayout.h
     src/Image.h src/Image.cpp
     src/Texture.h src/Texture.cpp
+    src/Mesh.h src/Mesh.cpp
 )
 
 # 파이썬 경로를 Dependency 쪽으로 넘겨줄 변수에 저장
