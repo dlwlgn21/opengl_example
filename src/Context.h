@@ -8,6 +8,7 @@
 #include "VertexLayout.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "Model.h"
 
 CLASS_PTR(Context)
 class Context
@@ -29,6 +30,7 @@ private:
     std::unique_ptr<Mesh> mBoxMesh;
     std::unique_ptr<Texture> mTexture;
     std::unique_ptr<Texture> mTexture2;
+    std::unique_ptr<Model> mModel;
     uint32_t mVertexArrayObject;
 
     // Cam Param

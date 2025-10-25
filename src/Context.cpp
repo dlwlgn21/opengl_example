@@ -105,7 +105,11 @@ bool Context::TryInit()
     {
         return false;
     }
-    
+    mModel = Model::LoadOrNull("./Model/backpack.obj");
+    if (mModel == nullptr)
+    {
+        return false;
+    }
     unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Lighting.vs", GL_VERTEX_SHADER);
     unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Lighting.fs", GL_FRAGMENT_SHADER);
     if (vs == nullptr || fs == nullptr)
@@ -154,11 +158,13 @@ bool Context::TryInit()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
-    mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
-    mMaterial.Specular = Texture::CreateFromImg(Image::LoadOrNull("./image/container2_specular.png").get());
+    // mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
+    // mMaterial.Specular = Texture::CreateFromImg(Image::LoadOrNull("./image/container2_specular.png").get());
     //mProgram->Use();
     //mProgram->SetUniform("texSampler1", 1);
 
+    mMaterial.Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
+    mMaterial.Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
     glEnable(GL_DEPTH_TEST);
     return true;
 }
@@ -242,38 +248,62 @@ void Context::Render()
     // mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
     // mBoxMesh->Draw();
 
+    // mProgram->Use();
+    // mProgram->SetUniform("viewWorldPos", mCamPos);
+    // mProgram->SetUniform("light.Pos", mLight.Pos);
+    // mProgram->SetUniform("light.Dir", mLight.Dir);
+	// mProgram->SetUniform("light.Cutoff", glm::vec2(
+    //     cosf(glm::radians(mLight.Cutoff[0])),
+    //     cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
+    // mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
+    // mProgram->SetUniform("light.Ambient", mLight.Ambient);
+    // mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
+    // mProgram->SetUniform("light.Specular", mLight.Specular);
+    // mProgram->SetUniform("material.Diffuse", 0);
+    // mProgram->SetUniform("material.Specular", 1);
+    // mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
+
+    // glActiveTexture(GL_TEXTURE0);
+    // mMaterial.Diffuse->Bind();
+
+    // glActiveTexture(GL_TEXTURE1);
+    // mMaterial.Specular->Bind();
+    
+    // for (size_t i = 0; i < cubePositions.size(); i++)
+    // {
+    //     glm::vec3& pos = cubePositions[i];
+    //     glm::highp_mat4 model = glm::translate(glm::mat4(1.0f), pos);
+    //     float angle = glm::radians((float)glfwGetTime() * 120.0f + 20.0f * (float)i);
+    //     model = glm::rotate(model,
+    //         mIsAnimation ? angle : 0.0f,
+    //         glm::vec3(1.0f, 0.5f, 0.0f));
+    //     glm::highp_mat4 transform = projection * view * model;
+    //     mProgram->SetUniform("transform", transform);
+    //     mProgram->SetUniform("modelTransform", model);
+    //     mBoxMesh->Draw();
+    // }
+
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
     mProgram->SetUniform("light.Pos", mLight.Pos);
     mProgram->SetUniform("light.Dir", mLight.Dir);
-	mProgram->SetUniform("light.Cutoff", glm::vec2(
-        cosf(glm::radians(mLight.Cutoff[0])),
-        cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
+    mProgram->SetUniform("light.Cutoff", glm::vec2(cosf(glm::radians(mLight.Cutoff[0])), cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
     mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
+
     mProgram->SetUniform("material.Diffuse", 0);
     mProgram->SetUniform("material.Specular", 1);
     mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
-
     glActiveTexture(GL_TEXTURE0);
     mMaterial.Diffuse->Bind();
-
     glActiveTexture(GL_TEXTURE1);
     mMaterial.Specular->Bind();
-    
-    for (size_t i = 0; i < cubePositions.size(); i++)
-    {
-        glm::vec3& pos = cubePositions[i];
-        glm::highp_mat4 model = glm::translate(glm::mat4(1.0f), pos);
-        float angle = glm::radians((float)glfwGetTime() * 120.0f + 20.0f * (float)i);
-        model = glm::rotate(model,
-            mIsAnimation ? angle : 0.0f,
-            glm::vec3(1.0f, 0.5f, 0.0f));
-        glm::highp_mat4 transform = projection * view * model;
-        mProgram->SetUniform("transform", transform);
-        mProgram->SetUniform("modelTransform", model);
-        mBoxMesh->Draw();
-    }
+
+    auto modelTransform = glm::mat4(1.0f);
+    auto transform = projection * view * modelTransform;
+    mProgram->SetUniform("transform", transform);
+    mProgram->SetUniform("modelTransform", modelTransform);
+    mModel->Draw();
 }
