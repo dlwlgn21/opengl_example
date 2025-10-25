@@ -219,3 +219,33 @@ add_dependencies(imgui ${DEP_LIST})
 set(DEP_INCLUDE_DIR ${DEP_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 set(DEP_LIST ${DEP_LIST} imgui)
 set(DEP_LIBS ${DEP_LIBS} imgui)
+
+# 공통 인자
+set(DEP_COMMON_ARGS
+  -DCMAKE_INSTALL_PREFIX=${DEP_INSTALL_DIR}
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5   # ← 이 줄이 핵심
+)
+
+# assimp
+ExternalProject_Add(
+    dep_assimp
+    GIT_REPOSITORY "https://github.com/assimp/assimp"
+    GIT_TAG "v5.0.1"
+    GIT_SHALLOW 1
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+    CMAKE_ARGS
+        ${DEP_COMMON_ARGS}
+        -DBUILD_SHARED_LIBS=OFF
+        -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
+        -DASSIMP_BUILD_TESTS=OFF
+        -DASSIMP_INJECT_DEBUG_POSTFIX=OFF
+        -DASSIMP_BUILD_ZLIB=ON
+    TEST_COMMAND ""
+)
+set(DEP_LIST ${DEP_LIST} dep_assimp)
+set(DEP_LIBS ${DEP_LIBS}
+    assimp-vc143-mt$<$<CONFIG:Debug>:d>
+    zlibstatic$<$<CONFIG:Debug>:d>
+    IrrXML$<$<CONFIG:Debug>:d>
+)
