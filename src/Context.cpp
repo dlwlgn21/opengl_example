@@ -199,7 +199,6 @@ bool Context::TryInit()
     );
     mBox2Material->Shininess = 64.0f;
     SPDLOG_INFO("PlaneMaterial Diffuse Texture Id {}", mPlaneMaterial->Diffuse->GetId());
-    glEnable(GL_DEPTH_TEST);
     return true;
 }
 
@@ -246,9 +245,10 @@ void Context::Render()
     ImGui::End();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     glm::highp_mat4 projection = glm::perspective(glm::radians(45.0f),
-        static_cast<float>(mWidth) / mHeight, 0.01f, 100.0f);
+        static_cast<float>(mWidth) / mHeight, 0.1f, 20.0f);
 
     mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                 glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
