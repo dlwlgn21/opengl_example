@@ -105,11 +105,11 @@ bool Context::TryInit()
     {
         return false;
     }
-    mModel = Model::LoadOrNull("./Model/backpack.obj");
-    if (mModel == nullptr)
-    {
-        return false;
-    }
+    // mModel = Model::LoadOrNull("./Model/backpack.obj");
+    // if (mModel == nullptr)
+    // {
+    //     return false;
+    // }
     unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Lighting.vs", GL_VERTEX_SHADER);
     unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Lighting.fs", GL_FRAGMENT_SHADER);
     if (vs == nullptr || fs == nullptr)
@@ -139,32 +139,66 @@ bool Context::TryInit()
     SPDLOG_INFO("Program Id : {}", mSimpleProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
-    unique_ptr<Image> img2 = Image::LoadOrNull("./Image/awesomeface.png");
-    if (img2 == nullptr)
-    {
-        return false;
-    }
+    // unique_ptr<Image> img2 = Image::LoadOrNull("./Image/awesomeface.png");
+    // if (img2 == nullptr)
+    // {
+    //     return false;
+    // }
     
-    unique_ptr<Image> img = Image::LoadOrNull("./Image/container.jpg");
-    if (img == nullptr)
-    {
-        return false;
-    }
-    mTexture = Texture::CreateFromImg(img.get());
-    mTexture2 = Texture::CreateFromImg(img2.get());
+    // unique_ptr<Image> img = Image::LoadOrNull("./Image/container.jpg");
+    // if (img == nullptr)
+    // {
+    //     return false;
+    // }
+    // mTexture = Texture::CreateFromImg(img.get());
+    // mTexture2 = Texture::CreateFromImg(img2.get());
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mTexture->GetId());
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, mTexture->GetId());
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
 
     // mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
     // mMaterial.Specular = Texture::CreateFromImg(Image::LoadOrNull("./image/container2_specular.png").get());
     //mProgram->Use();
     //mProgram->SetUniform("texSampler1", 1);
 
-    mMaterial.Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
-    mMaterial.Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
+
+    mBagMaterial = Material::Create();
+    mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
+    mBagMaterial->Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
+    
+    unique_ptr<Texture> darkGrayTexture = Texture::CreateFromImg(
+        Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)).get()
+    );
+
+    unique_ptr<Texture> grayTexture = Texture::CreateFromImg(
+        Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get()
+    );
+            
+    mPlaneMaterial = Material::Create();
+    mPlaneMaterial->Diffuse = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/marble.jpg").get()
+    );
+    mPlaneMaterial->Specular = move(grayTexture);
+    mPlaneMaterial->Shininess = 128.0f;
+
+    mBox1Material = Material::Create();
+    mBox1Material->Diffuse = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/container.jpg").get()
+    );
+    mBox1Material->Specular = move(darkGrayTexture);
+    mBox1Material->Shininess = 16.0f;
+
+    mBox2Material = Material::Create();
+    mBox2Material->Diffuse = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/container2.png").get()
+    );
+    mBox2Material->Specular = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/container2_specular.png").get()
+    );
+    mBox2Material->Shininess = 64.0f;
+    SPDLOG_INFO("PlaneMaterial Diffuse Texture Id {}", mPlaneMaterial->Diffuse->GetId());
     glEnable(GL_DEPTH_TEST);
     return true;
 }
@@ -199,29 +233,17 @@ void Context::Render()
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(mLight.Ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
+            ImGui::Checkbox("Is FlashLightMode", &mIsFlashLight);
+
         }
         
-        if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
-        {
-            ImGui::DragFloat("m.shininess", &mMaterial.Shininess, 1.0f, 1.0f, 256.0f);
-        }
+        // if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
+        // {
+        //     ImGui::DragFloat("m.shininess", &mBagMaterial->Shininess, 1.0f, 1.0f, 256.0f);
+        // }
         ImGui::Checkbox("animation", &mIsAnimation);
     }
     ImGui::End();
-
-    // std::vector<glm::vec3> cubePositions = 
-    // {
-    //     glm::vec3( 0.0f, 0.0f, 0.0f),
-    //     glm::vec3( 2.0f, 5.0f, -15.0f),
-    //     glm::vec3(-1.5f, -2.2f, -2.5f),
-    //     glm::vec3(-3.8f, -2.0f, -12.3f),
-    //     glm::vec3( 2.4f, -0.4f, -3.5f),
-    //     glm::vec3(-1.7f, 3.0f, -7.5f),
-    //     glm::vec3( 1.3f, -2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 2.0f, -2.5f),
-    //     glm::vec3( 1.5f, 0.2f, -1.5f),
-    //     glm::vec3(-1.3f, 1.0f, -1.5f),
-    // };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -232,21 +254,13 @@ void Context::Render()
                 glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
                 glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
 
-    mLight.Pos = mCamPos;
-    mLight.Dir = mCamFront;
+
     glm::highp_mat4 view = glm::lookAt(
         mCamPos, 
         mCamPos + mCamFront, 
         mCamUp
     );
-    // glm::highp_mat4 lightModelTransform = 
-    //     glm::translate(glm::mat4(1.0f), mLight.Pos) *
-    //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-    // mSimpleProgram->Use();
-    // mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-    // mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    // mBoxMesh->Draw();
 
     // mProgram->Use();
     // mProgram->SetUniform("viewWorldPos", mCamPos);
@@ -282,28 +296,73 @@ void Context::Render()
     //     mProgram->SetUniform("modelTransform", model);
     //     mBoxMesh->Draw();
     // }
+    glm::vec3 lightPos = mIsFlashLight ? mCamPos : mLight.Pos;
+    glm::vec3 lightDir = mIsFlashLight ? mCamFront : mLight.Dir;
+    if (!mIsFlashLight)
+    {
+        glm::highp_mat4 lightModelTransform = 
+            glm::translate(glm::mat4(1.0f), mLight.Pos) *
+            glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
+        mSimpleProgram->Use();
+        mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+        mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+        mBoxMesh->Draw(mSimpleProgram.get());
+    }
     mProgram->Use();
     mProgram->SetUniform("viewWorldPos", mCamPos);
-    mProgram->SetUniform("light.Pos", mLight.Pos);
-    mProgram->SetUniform("light.Dir", mLight.Dir);
+    mProgram->SetUniform("light.Pos", lightPos);
+    mProgram->SetUniform("light.Dir", lightDir);
     mProgram->SetUniform("light.Cutoff", glm::vec2(cosf(glm::radians(mLight.Cutoff[0])), cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
     mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
     mProgram->SetUniform("light.Ambient", mLight.Ambient);
     mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
     mProgram->SetUniform("light.Specular", mLight.Specular);
 
-    mProgram->SetUniform("material.Diffuse", 0);
-    mProgram->SetUniform("material.Specular", 1);
-    mProgram->SetUniform("material.Shininess", mMaterial.Shininess);
-    glActiveTexture(GL_TEXTURE0);
-    mMaterial.Diffuse->Bind();
-    glActiveTexture(GL_TEXTURE1);
-    mMaterial.Specular->Bind();
+    // mProgram->SetUniform("material.Diffuse", 0);
+    // mProgram->SetUniform("material.Specular", 1);
+    // mProgram->SetUniform("material.Shininess", mBagMaterial->Shininess);
 
-    auto modelTransform = glm::mat4(1.0f);
+    // glActiveTexture(GL_TEXTURE0);
+    // mMaterial.Diffuse->Bind();
+    // glActiveTexture(GL_TEXTURE1);
+    // mMaterial.Specular->Bind();
+
+    // auto modelTransform = glm::mat4(1.0f);
+    // auto transform = projection * view * modelTransform;
+    // mProgram->SetUniform("transform", transform);
+    // mProgram->SetUniform("modelTransform", modelTransform);
+    //mModel->Draw(mProgram.get());
+
+
+    mProgram->Use();
+    auto modelTransform =
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 10.0f));
     auto transform = projection * view * modelTransform;
     mProgram->SetUniform("transform", transform);
     mProgram->SetUniform("modelTransform", modelTransform);
-    mModel->Draw(mProgram.get());
+    mPlaneMaterial->SetToProgram(mProgram.get());
+    mBoxMesh->Draw(mProgram.get());
+
+    modelTransform =
+        glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.75f, -4.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+    transform = projection * view * modelTransform;
+    mProgram->SetUniform("transform", transform);
+    mProgram->SetUniform("modelTransform", modelTransform);
+    mBox1Material->SetToProgram(mProgram.get());
+    mBoxMesh->Draw(mProgram.get());
+
+    modelTransform =
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+    transform = projection * view * modelTransform;
+    mProgram->SetUniform("transform", transform);
+    mProgram->SetUniform("modelTransform", modelTransform);
+    mBox2Material->SetToProgram(mProgram.get());
+    mBoxMesh->Draw(mProgram.get());
+
 }
