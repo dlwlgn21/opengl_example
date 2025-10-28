@@ -105,6 +105,11 @@ bool Context::TryInit()
     {
         return false;
     }
+    mPlaneMesh = Mesh::MakePlaneOrNull();
+    if (mPlaneMesh == nullptr)
+    {
+        return false;
+    }
     // mModel = Model::LoadOrNull("./Model/backpack.obj");
     // if (mModel == nullptr)
     // {
@@ -123,6 +128,8 @@ bool Context::TryInit()
     {
         return false;
     }
+    SPDLOG_INFO("Lighthing Program Id : {}", mProgram->GetId());
+
     unique_ptr<Shader> sVs = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
     unique_ptr<Shader> sFs = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
     if (sVs == nullptr || sFs == nullptr)
@@ -136,38 +143,32 @@ bool Context::TryInit()
     {
         return false;
     }
-    SPDLOG_INFO("Program Id : {}", mSimpleProgram->GetId());
+    SPDLOG_INFO("Simple Program Id : {}", mSimpleProgram->GetId());
+
+    unique_ptr<Shader> textureVs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
+    unique_ptr<Shader> textureFs = Shader::CreateFromFileOrNull("./Shader/Texture.fs", GL_FRAGMENT_SHADER);
+    if (textureVs == nullptr || textureFs == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Texture VertexShader Id {}", textureVs->GetId());
+    SPDLOG_INFO("Texture FragmentShader Id {}", textureFs->GetId());
+    mTextureProgram = Program::CreateOrNull({textureVs.get(), textureFs.get()});
+    if (mTextureProgram == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Texture Program Id : {}", mTextureProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
-
-    // unique_ptr<Image> img2 = Image::LoadOrNull("./Image/awesomeface.png");
-    // if (img2 == nullptr)
-    // {
-    //     return false;
-    // }
-    
-    // unique_ptr<Image> img = Image::LoadOrNull("./Image/container.jpg");
-    // if (img == nullptr)
-    // {
-    //     return false;
-    // }
-    // mTexture = Texture::CreateFromImg(img.get());
-    // mTexture2 = Texture::CreateFromImg(img2.get());
-
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, mTexture->GetId());
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, mTexture2->GetId());
-
-    // mMaterial.Diffuse = Texture::CreateFromImg(Image::LoadOrNull("./image/container2.png").get());
-    // mMaterial.Specular = Texture::CreateFromImg(Image::LoadOrNull("./image/container2_specular.png").get());
-    //mProgram->Use();
-    //mProgram->SetUniform("texSampler1", 1);
-
 
     mBagMaterial = Material::Create();
     mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
     mBagMaterial->Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
     
+    mWindowTexture = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/blending_transparent_window.png").get()
+    );
+
     unique_ptr<Texture> darkGrayTexture = Texture::CreateFromImg(
         Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)).get()
     );
@@ -355,26 +356,6 @@ void Context::Render()
     mBox1Material->SetToProgram(mProgram.get());
     mBoxMesh->Draw(mProgram.get());
 
-
-
-
-
-    // modelTransform =
-    //     glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
-    //     glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
-    //     glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
-    // transform = projection * view * modelTransform;
-    // mProgram->SetUniform("transform", transform);
-    // mProgram->SetUniform("modelTransform", modelTransform);
-    // mBox2Material->SetToProgram(mProgram.get());
-    // mBoxMesh->Draw(mProgram.get());
-
-
-    glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // 최종적으로 그림이 그려지는 부분은 Stencil Buffer의 값이 1로 채워지게 됨
-    glStencilFunc(GL_ALWAYS, 1, 0xFF); // Stencil test always pass
-    glStencilMask(0xFF);
-
     modelTransform =
         glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
         glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -385,17 +366,25 @@ void Context::Render()
     mBox2Material->SetToProgram(mProgram.get());
     mBoxMesh->Draw(mProgram.get());
 
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // Stencil test pass when stencil value is not equal to 1
-    glStencilMask(0x00); // disable writing to the stencil buffer, 스텐실 버퍼 통과하더라도 스텐실 버퍼의 값이 업데이트 되지 않음 
-    glDisable(GL_DEPTH_TEST);
-    mSimpleProgram->Use();
-    mSimpleProgram->SetUniform("color", glm::vec4(1.0f, 1.0f, 0.5f, 1.0f));
-    mSimpleProgram->SetUniform("transform", transform *
-    glm::scale(glm::mat4(1.0f), glm::vec3(1.05f, 1.05f, 1.05f)));
-    mBoxMesh->Draw(mSimpleProgram.get());
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
+    mTextureProgram->Use();
+    mWindowTexture->Bind();
+    mTextureProgram->SetUniform("texSampler", 0);
+
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 4.0f));
+    transform = projection * view * modelTransform;
+    mTextureProgram->SetUniform("transform", transform);
+    mPlaneMesh->Draw(mTextureProgram.get());
+
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.5f, 5.0f));
+    transform = projection * view * modelTransform;
+    mTextureProgram->SetUniform("transform", transform);
+    mPlaneMesh->Draw(mTextureProgram.get());
+
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.5f, 6.0f));
+    transform = projection * view * modelTransform;
+    mTextureProgram->SetUniform("transform", transform);
+    mPlaneMesh->Draw(mTextureProgram.get());
 }

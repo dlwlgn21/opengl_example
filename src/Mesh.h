@@ -37,6 +37,7 @@ class Mesh
 public:
     static std::unique_ptr<Mesh> CreateOrNull(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, uint32_t primitiveType);
     static std::unique_ptr<Mesh> MakeBoxOrNull();
+    static std::unique_ptr<Mesh> MakePlaneOrNull();
 
     const VertexLayout* GetVertexLayout() const { return mVertexLayout.get(); }
     Buffer* GetVertexBuffer() const { return mVertexBuffer.get(); }

@@ -27,9 +27,11 @@ private:
     bool TryInit();
     std::unique_ptr<Program> mProgram;
     std::unique_ptr<Program> mSimpleProgram;
+    std::unique_ptr<Program> mTextureProgram;
+
     std::unique_ptr<Mesh> mBoxMesh;
-    std::unique_ptr<Texture> mTexture;
-    std::unique_ptr<Texture> mTexture2;
+    std::unique_ptr<Mesh> mPlaneMesh;
+    std::unique_ptr<Texture> mWindowTexture;
     std::unique_ptr<Model> mBagModel;
     std::unique_ptr<Material> mPlaneMaterial;
     std::unique_ptr<Material> mBox1Material;

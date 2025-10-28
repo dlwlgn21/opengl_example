@@ -3,17 +3,14 @@
 in vec4 vertexColor;
 in vec2 texCoord;
 out vec4 fragColor;
-uniform sampler2D texSampler1;
-uniform sampler2D texSampler2;
+uniform sampler2D texSampler;
 
 void main()
 {
-    if (texCoord.x < 0.5)
+  	vec4 pixel = texture(texSampler, texCoord); 
+	if (pixel.a < 0.01)
     {
-        fragColor = texture(texSampler1, texCoord);
+		discard;
     }
-    else
-    {
-        fragColor = texture(texSampler2, texCoord);
-    }
+    fragColor = pixel;
 }
