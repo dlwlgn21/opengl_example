@@ -9,6 +9,7 @@
 #include "Texture.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "FrameBuffer.h"
 
 CLASS_PTR(Context)
 class Context
@@ -78,6 +79,8 @@ private:
     //     std::unique_ptr<Texture> Specular;
     //     float Shininess { 32.0f };
     // };
+
+    std::unique_ptr<Framebuffer> mFramebuffer;
 };
 
 #endif //__CONTEXT_H__

@@ -97,6 +97,9 @@ void Context::Reshape(int width, int height)
     mWidth = width;
     mHeight = height;
     glViewport(0, 0, mWidth, mHeight);
+    mFramebuffer = Framebuffer::CreateOrNull(
+        Texture::CreateEmptyTexture(width, height, GL_RGBA)
+    );
 }
 bool Context::TryInit()
 {
@@ -245,6 +248,7 @@ void Context::Render()
     }
     ImGui::End();
 
+    mFramebuffer->Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -387,4 +391,16 @@ void Context::Render()
     transform = projection * view * modelTransform;
     mTextureProgram->SetUniform("transform", transform);
     mPlaneMesh->Draw(mTextureProgram.get());
+
+
+
+    Framebuffer::BindToDefault();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    mTextureProgram->Use();
+    mTextureProgram->SetUniform("transform",
+        glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
+    mFramebuffer->GetColorAttachment()->Bind();
+    mTextureProgram->SetUniform("texSampler", 0);
+    mPlaneMesh->Draw(mTextureProgram.get());    
 }
