@@ -29,6 +29,8 @@ private:
     std::unique_ptr<Program> mProgram;
     std::unique_ptr<Program> mSimpleProgram;
     std::unique_ptr<Program> mTextureProgram;
+    std::unique_ptr<Program> mPostProgram;
+    float mGamma {1.0f};
 
     std::unique_ptr<Mesh> mBoxMesh;
     std::unique_ptr<Mesh> mPlaneMesh;

@@ -164,6 +164,24 @@ bool Context::TryInit()
     SPDLOG_INFO("Texture Program Id : {}", mTextureProgram->GetId());
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
+
+
+    unique_ptr<Shader> postTextureVs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
+    unique_ptr<Shader> postFs = Shader::CreateFromFileOrNull("./Shader/Gamma.fs", GL_FRAGMENT_SHADER);
+    if (postTextureVs == nullptr || postFs == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("postTextureVs VertexShader Id {}", postTextureVs->GetId());
+    SPDLOG_INFO("postFs FragmentShader Id {}", postFs->GetId());
+    mPostProgram = Program::CreateOrNull({postTextureVs.get(), postFs.get()});
+    if (mPostProgram == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Post Program Id : {}", mPostProgram->GetId());
+
+
     mBagMaterial = Material::Create();
     mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
     mBagMaterial->Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
@@ -214,6 +232,8 @@ void Context::Render()
         {
             glClearColor(mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a);
         }
+        ImGui::DragFloat("gamma", &mGamma, 0.01f, 0.0f, 2.0f);
+
         ImGui::Separator();
         ImGui::DragFloat3("camera pos", glm::value_ptr(mCamPos), 0.01f);
         ImGui::DragFloat("camera yaw", &mCamYaw, 0.5f);
@@ -397,10 +417,16 @@ void Context::Render()
     Framebuffer::BindToDefault();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    mTextureProgram->Use();
-    mTextureProgram->SetUniform("transform",
+    // mTextureProgram->Use();
+    // mTextureProgram->SetUniform("transform",
+    //     glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
+    // mFramebuffer->GetColorAttachment()->Bind();
+    // mTextureProgram->SetUniform("texSampler", 0);
+    // mPlaneMesh->Draw(mTextureProgram.get());
+    mPostProgram->Use();
+    mPostProgram->SetUniform("transform",
         glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
+    mPostProgram->SetUniform("gamma", mGamma);
     mFramebuffer->GetColorAttachment()->Bind();
-    mTextureProgram->SetUniform("texSampler", 0);
-    mPlaneMesh->Draw(mTextureProgram.get());    
+    mPlaneMesh->Draw(mPostProgram.get());
 }
