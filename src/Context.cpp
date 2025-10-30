@@ -103,6 +103,21 @@ void Context::Reshape(int width, int height)
 }
 bool Context::TryInit()
 {
+    unique_ptr<Image> cubeRight = Image::LoadOrNull("./image/skybox/right.jpg", false);
+    unique_ptr<Image> cubeLeft = Image::LoadOrNull("./image/skybox/left.jpg", false);
+    unique_ptr<Image> cubeTop = Image::LoadOrNull("./image/skybox/top.jpg", false);
+    unique_ptr<Image> cubeBottom = Image::LoadOrNull("./image/skybox/bottom.jpg", false);
+    unique_ptr<Image> cubeFront = Image::LoadOrNull("./image/skybox/front.jpg", false);
+    unique_ptr<Image> cubeBack = Image::LoadOrNull("./image/skybox/back.jpg", false);
+    mCubeTexture = CubeTexture::CreateFromImages({
+        cubeRight.get(),
+        cubeLeft.get(),
+        cubeTop.get(),
+        cubeBottom.get(),
+        cubeFront.get(),
+        cubeBack.get(),
+    });
+
     mBoxMesh = Mesh::MakeBoxOrNull();
     if (mBoxMesh == nullptr)
     {
@@ -181,6 +196,21 @@ bool Context::TryInit()
     }
     SPDLOG_INFO("Post Program Id : {}", mPostProgram->GetId());
 
+
+    unique_ptr<Shader> skyboxFs = Shader::CreateFromFileOrNull("./Shader/Skybox.vs", GL_VERTEX_SHADER);
+    unique_ptr<Shader> skyboxVs = Shader::CreateFromFileOrNull("./Shader/Skybox.fs", GL_FRAGMENT_SHADER);
+    if (skyboxFs == nullptr || skyboxVs == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("skyboxFs VertexShader Id {}", skyboxFs->GetId());
+    SPDLOG_INFO("skyboxVs FragmentShader Id {}", skyboxVs->GetId());
+    mSkyboxProgram = Program::CreateOrNull({skyboxFs.get(), skyboxVs.get()});
+    if (mSkyboxProgram == nullptr)
+    {
+        return false;
+    }
+    SPDLOG_INFO("Skybox Program Id : {}", mSkyboxProgram->GetId());
 
     mBagMaterial = Material::Create();
     mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
@@ -273,7 +303,7 @@ void Context::Render()
     glEnable(GL_DEPTH_TEST);
 
     glm::highp_mat4 projection = glm::perspective(glm::radians(45.0f),
-        static_cast<float>(mWidth) / mHeight, 0.1f, 20.0f);
+        static_cast<float>(mWidth) / mHeight, 0.1f, 100.0f);
 
     mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
                 glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
@@ -286,6 +316,14 @@ void Context::Render()
         mCamUp
     );
 
+    auto skyboxModelTransform =
+        glm::translate(glm::mat4(1.0), mCamPos) *
+        glm::scale(glm::mat4(1.0), glm::vec3(50.0f));
+    mSkyboxProgram->Use();
+    mCubeTexture->Bind();
+    mSkyboxProgram->SetUniform("skybox", 0);
+    mSkyboxProgram->SetUniform("transform", projection * view * skyboxModelTransform);
+    mBoxMesh->Draw(mSkyboxProgram.get());
 
     // mProgram->Use();
     // mProgram->SetUniform("viewWorldPos", mCamPos);
@@ -416,6 +454,12 @@ void Context::Render()
 
     Framebuffer::BindToDefault();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    mPostProgram->Use();
+    mPostProgram->SetUniform("transform",
+        glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
+    mPostProgram->SetUniform("gamma", mGamma);
+    mFramebuffer->GetColorAttachment()->Bind();
+    mPlaneMesh->Draw(mPostProgram.get());
 
     // mTextureProgram->Use();
     // mTextureProgram->SetUniform("transform",
@@ -423,10 +467,4 @@ void Context::Render()
     // mFramebuffer->GetColorAttachment()->Bind();
     // mTextureProgram->SetUniform("texSampler", 0);
     // mPlaneMesh->Draw(mTextureProgram.get());
-    mPostProgram->Use();
-    mPostProgram->SetUniform("transform",
-        glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
-    mPostProgram->SetUniform("gamma", mGamma);
-    mFramebuffer->GetColorAttachment()->Bind();
-    mPlaneMesh->Draw(mPostProgram.get());
 }

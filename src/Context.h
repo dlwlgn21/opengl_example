@@ -10,6 +10,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "FrameBuffer.h"
+#include "CubeTexture.h"
 
 CLASS_PTR(Context)
 class Context
@@ -30,11 +31,15 @@ private:
     std::unique_ptr<Program> mSimpleProgram;
     std::unique_ptr<Program> mTextureProgram;
     std::unique_ptr<Program> mPostProgram;
+    std::unique_ptr<Program> mSkyboxProgram;
+
     float mGamma {1.0f};
 
     std::unique_ptr<Mesh> mBoxMesh;
     std::unique_ptr<Mesh> mPlaneMesh;
     std::unique_ptr<Texture> mWindowTexture;
+    std::unique_ptr<CubeTexture> mCubeTexture;
+
     std::unique_ptr<Model> mBagModel;
     std::unique_ptr<Material> mPlaneMaterial;
     std::unique_ptr<Material> mBox1Material;

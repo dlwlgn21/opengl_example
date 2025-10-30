@@ -3,10 +3,10 @@
 #include "Image.h"
 
 using namespace std;
-unique_ptr<Image> Image::LoadOrNull(const string& filePath)
+unique_ptr<Image> Image::LoadOrNull(const string& filePath, bool isFlipY)
 {
     unique_ptr<Image> image = unique_ptr<Image>(new Image());
-    if (!image->TryLoadWithStb(filePath))
+    if (!image->TryLoadWithStb(filePath, isFlipY))
     {
         return nullptr;
     }
@@ -76,9 +76,9 @@ bool Image::TryAllocate(int width, int height, int channelCount)
     mpData = (uint8_t*)malloc(mWidth * mHeight * mChannelCount);
     return mpData != nullptr ? true : false; 
 }
-bool Image::TryLoadWithStb(const string& filePath)
+bool Image::TryLoadWithStb(const string& filePath, bool isFlipY)
 {
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(isFlipY);
     mpData = stbi_load(filePath.c_str(), &mWidth, &mHeight, &mChannelCount, 0);
     if (mpData == nullptr)
     {

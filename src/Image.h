@@ -7,7 +7,7 @@ CLASS_PTR(Image)
 class Image
 {
 public:
-    static std::unique_ptr<Image> LoadOrNull(const std::string& filePath);
+    static std::unique_ptr<Image> LoadOrNull(const std::string& filePath, bool isFlipY = true);
     static std::unique_ptr<Image> CreateOrNull(int width, int height, int channelCount = 4);
     static std::unique_ptr<Image> CreateSingleColorImageOrNull(int width, int height, const glm::vec4& color);
     ~Image();
@@ -20,7 +20,7 @@ public:
     void SetCheckImg(int gridX, int gridY);
 private:
     Image() = default;
-    bool TryLoadWithStb(const std::string& filePath);
+    bool TryLoadWithStb(const std::string& filePath, bool isFlipY);
     bool TryAllocate(int width, int height, int channelCount);
     int mWidth{};
     int mHeight{};
