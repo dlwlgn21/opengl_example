@@ -32,13 +32,15 @@ private:
     void InitMaterials();
     void InitTextures();
     void InitModels();
-
+    void InitEtc();
+    void InitBuffersAndLayouts();
     std::unique_ptr<Program> mDefaultLightingProgram;
     std::unique_ptr<Program> mSimpleColorProgram;
     std::unique_ptr<Program> mTextureProgram;
     std::unique_ptr<Program> mPostProgram;
     std::unique_ptr<Program> mSkyboxProgram;
     std::unique_ptr<Program> mEnvmapProgram;
+    std::unique_ptr<Program> mGrassProgram;
 
     float mGamma {1.0f};
 
@@ -47,6 +49,7 @@ private:
 
 
     std::unique_ptr<Texture> mWindowTexture;
+    std::unique_ptr<Texture> mGrassTexture;
     std::unique_ptr<CubeTexture> mCubeTexture;
 
     std::unique_ptr<Model> mBagModel;
@@ -97,6 +100,9 @@ private:
     // };
 
     std::unique_ptr<Framebuffer> mFramebuffer;
+    std::unique_ptr<Buffer> mGrassPosBuffer;
+    std::unique_ptr<VertexLayout> mGrassInstanceLayout;
+    std::vector<glm::vec3> mGrassPositions;
 };
 
 #endif //__CONTEXT_H__

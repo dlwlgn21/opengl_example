@@ -1,5 +1,6 @@
 #include "Context.h"
 #include "Image.h"
+#include "Mesh.h"
 #include <imgui.h>
 using namespace std;
 
@@ -136,6 +137,11 @@ void Context::InitPrograms()
     {
         SPDLOG_INFO("Failed to create EnvmapProgram");
     }
+    mGrassProgram = Program::CreateOrNull("./shader/Grass.vs", "./shader/Grass.fs");
+    if (mGrassProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create GrassProgram");
+    }
 
 }
 void Context::InitMeshes()
@@ -211,10 +217,46 @@ void Context::InitTextures()
         Image::LoadOrNull("./image/blending_transparent_window.png").get()
     );
 
+    mGrassTexture = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/grass.png").get()
+    );
+
 }
 void Context::InitModels()
 {
     mBagModel = Model::LoadOrNull("./Model/backpack.obj");
+}
+void Context::InitEtc()
+{
+    mGrassPositions.resize(10000);
+    for (size_t i = 0; i < mGrassPositions.size(); i++)
+    {
+        mGrassPositions[i].x = ((float)rand() / (float)RAND_MAX * 2.0f - 1.0f) * 5.0f;
+        mGrassPositions[i].z = ((float)rand() / (float)RAND_MAX * 2.0f - 1.0f) * 5.0f;
+        mGrassPositions[i].y = glm::radians((float)rand() / (float)RAND_MAX * 360.0f);
+    }
+    mGrassInstanceLayout = VertexLayout::Create();
+    mGrassInstanceLayout->Bind();
+    mPlaneMesh->GetVertexBuffer()->Bind();
+    mGrassInstanceLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    mGrassInstanceLayout->SetAttrib(
+        1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, Normal)
+    );
+    mGrassInstanceLayout->SetAttrib(
+        2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, TexCoord)
+    );
+    
+    mGrassPosBuffer = Buffer::CreateWithDataOrNull(GL_ARRAY_BUFFER, GL_STATIC_DRAW,
+        mGrassPositions.data(), sizeof(glm::vec3), mGrassPositions.size());
+    mGrassPosBuffer->Bind();
+    mGrassInstanceLayout->SetAttrib(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0);
+    glVertexAttribDivisor(3, 1);
+    mPlaneMesh->GetIndexBuffer()->Bind();
+}
+
+void Context::InitBuffersAndLayouts()
+{
+
 }
 
 bool Context::TryInit()
@@ -224,6 +266,7 @@ bool Context::TryInit()
     InitMaterials();
     InitTextures();
     InitModels();
+    InitEtc();
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
     return true;
 }
@@ -418,6 +461,23 @@ void Context::Render()
     mEnvmapProgram->SetUniform("skybox", 0);
     mBoxMesh->Draw(mEnvmapProgram.get());
 
+
+
+    glEnable(GL_BLEND);
+    mGrassProgram->Use();
+    mGrassProgram->SetUniform("tex", 0);
+    mGrassTexture->Bind();
+    mGrassInstanceLayout->Bind();
+    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+    transform = projection * view * modelTransform;
+    mGrassProgram->SetUniform("transform", transform);
+    glDrawElementsInstanced(
+        GL_TRIANGLES,
+        mPlaneMesh->GetIndexBuffer()->GetCount(),
+        GL_UNSIGNED_INT, 
+        0,
+        mGrassPosBuffer->GetCount()
+    );
 
 
 
