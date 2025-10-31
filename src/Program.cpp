@@ -10,6 +10,9 @@ unique_ptr<Program> Program::CreateOrNull(const vector<Shader*>& shaders)
     {
         return nullptr;
     }
+    SPDLOG_INFO("[Program Id {}", program->GetId());
+    SPDLOG_INFO("VertexShader Id {}", shaders[0]->GetId());
+    SPDLOG_INFO("FragmentShader Id {}]", shaders[1]->GetId());
     return move(program);
 }
 
@@ -22,6 +25,8 @@ unique_ptr<Program> Program::CreateOrNull(const std::string& vsFilename, const s
   {
       return nullptr;
   }
+
+
   return std::move(CreateOrNull({vs.get(), fs.get()}));
 }
 

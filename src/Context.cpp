@@ -101,125 +101,51 @@ void Context::Reshape(int width, int height)
         Texture::CreateEmptyTexture(width, height, GL_RGBA)
     );
 }
-bool Context::TryInit()
-{
-    unique_ptr<Image> cubeRight = Image::LoadOrNull("./image/skybox/right.jpg", false);
-    unique_ptr<Image> cubeLeft = Image::LoadOrNull("./image/skybox/left.jpg", false);
-    unique_ptr<Image> cubeTop = Image::LoadOrNull("./image/skybox/top.jpg", false);
-    unique_ptr<Image> cubeBottom = Image::LoadOrNull("./image/skybox/bottom.jpg", false);
-    unique_ptr<Image> cubeFront = Image::LoadOrNull("./image/skybox/front.jpg", false);
-    unique_ptr<Image> cubeBack = Image::LoadOrNull("./image/skybox/back.jpg", false);
-    mCubeTexture = CubeTexture::CreateFromImages({
-        cubeRight.get(),
-        cubeLeft.get(),
-        cubeTop.get(),
-        cubeBottom.get(),
-        cubeFront.get(),
-        cubeBack.get(),
-    });
 
+void Context::InitPrograms()
+{
+    mDefaultLightingProgram = Program::CreateOrNull("./Shader/Lighting.vs", "./Shader/Lighting.fs");
+    if (mDefaultLightingProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create DefaultLightingProgram");
+    }
+    mSimpleColorProgram = Program::CreateOrNull("./Shader/Simple.vs", "./Shader/Simple.fs");
+    if (mSimpleColorProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create SimpleColorProgram");
+    }
+    mTextureProgram = Program::CreateOrNull("./Shader/Texture.vs","./Shader/Texture.fs");
+    if (mTextureProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create SimpleTextureProgram");
+    }
+
+    mPostProgram = Program::CreateOrNull("./Shader/Texture.vs", "./Shader/Gamma.fs");
+    if (mPostProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create PostProgram");
+    }
+    mSkyboxProgram = Program::CreateOrNull("./Shader/Skybox.vs", "./Shader/Skybox.fs");
+    if (mSkyboxProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create SkyBoxProgram");
+    }
+}
+void Context::InitMeshes()
+{
     mBoxMesh = Mesh::MakeBoxOrNull();
     if (mBoxMesh == nullptr)
     {
-        return false;
+        SPDLOG_INFO("Failed to create Box mesh");
     }
     mPlaneMesh = Mesh::MakePlaneOrNull();
     if (mPlaneMesh == nullptr)
     {
-        return false;
+        SPDLOG_INFO("Failed to create Plane mesh");
     }
-    // mModel = Model::LoadOrNull("./Model/backpack.obj");
-    // if (mModel == nullptr)
-    // {
-    //     return false;
-    // }
-    unique_ptr<Shader> vs = Shader::CreateFromFileOrNull("./Shader/Lighting.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> fs = Shader::CreateFromFileOrNull("./Shader/Lighting.fs", GL_FRAGMENT_SHADER);
-    if (vs == nullptr || fs == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("VertexShader Id {}", vs->GetId());
-    SPDLOG_INFO("FragmentShader Id {}", fs->GetId());
-    mProgram = Program::CreateOrNull({fs.get(), vs.get()});
-    if (mProgram == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Lighthing Program Id : {}", mProgram->GetId());
-
-    unique_ptr<Shader> sVs = Shader::CreateFromFileOrNull("./Shader/Simple.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> sFs = Shader::CreateFromFileOrNull("./Shader/Simple.fs", GL_FRAGMENT_SHADER);
-    if (sVs == nullptr || sFs == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Simple VertexShader Id {}", sVs->GetId());
-    SPDLOG_INFO("Simple FragmentShader Id {}", sFs->GetId());
-    mSimpleProgram = Program::CreateOrNull({sVs.get(), sFs.get()});
-    if (mSimpleProgram == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Simple Program Id : {}", mSimpleProgram->GetId());
-
-    unique_ptr<Shader> textureVs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> textureFs = Shader::CreateFromFileOrNull("./Shader/Texture.fs", GL_FRAGMENT_SHADER);
-    if (textureVs == nullptr || textureFs == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Texture VertexShader Id {}", textureVs->GetId());
-    SPDLOG_INFO("Texture FragmentShader Id {}", textureFs->GetId());
-    mTextureProgram = Program::CreateOrNull({textureVs.get(), textureFs.get()});
-    if (mTextureProgram == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Texture Program Id : {}", mTextureProgram->GetId());
-    glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
-
-
-
-    unique_ptr<Shader> postTextureVs = Shader::CreateFromFileOrNull("./Shader/Texture.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> postFs = Shader::CreateFromFileOrNull("./Shader/Gamma.fs", GL_FRAGMENT_SHADER);
-    if (postTextureVs == nullptr || postFs == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("postTextureVs VertexShader Id {}", postTextureVs->GetId());
-    SPDLOG_INFO("postFs FragmentShader Id {}", postFs->GetId());
-    mPostProgram = Program::CreateOrNull({postTextureVs.get(), postFs.get()});
-    if (mPostProgram == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Post Program Id : {}", mPostProgram->GetId());
-
-
-    unique_ptr<Shader> skyboxFs = Shader::CreateFromFileOrNull("./Shader/Skybox.vs", GL_VERTEX_SHADER);
-    unique_ptr<Shader> skyboxVs = Shader::CreateFromFileOrNull("./Shader/Skybox.fs", GL_FRAGMENT_SHADER);
-    if (skyboxFs == nullptr || skyboxVs == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("skyboxFs VertexShader Id {}", skyboxFs->GetId());
-    SPDLOG_INFO("skyboxVs FragmentShader Id {}", skyboxVs->GetId());
-    mSkyboxProgram = Program::CreateOrNull({skyboxFs.get(), skyboxVs.get()});
-    if (mSkyboxProgram == nullptr)
-    {
-        return false;
-    }
-    SPDLOG_INFO("Skybox Program Id : {}", mSkyboxProgram->GetId());
-
-    mBagMaterial = Material::Create();
-    mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
-    mBagMaterial->Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
-    
-    mWindowTexture = Texture::CreateFromImg(
-        Image::LoadOrNull("./image/blending_transparent_window.png").get()
-    );
-
+}
+void Context::InitMaterials()
+{
     unique_ptr<Texture> darkGrayTexture = Texture::CreateFromImg(
         Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)).get()
     );
@@ -251,6 +177,47 @@ bool Context::TryInit()
     );
     mBox2Material->Shininess = 64.0f;
     SPDLOG_INFO("PlaneMaterial Diffuse Texture Id {}", mPlaneMaterial->Diffuse->GetId());
+
+
+    mBagMaterial = Material::Create();
+    mBagMaterial->Diffuse = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
+    mBagMaterial->Specular = Texture::CreateFromImg(Image::CreateSingleColorImageOrNull(4, 4, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
+    
+}
+void Context::InitTextures()
+{
+    unique_ptr<Image> cubeRight = Image::LoadOrNull("./image/skybox/right.jpg", false);
+    unique_ptr<Image> cubeLeft = Image::LoadOrNull("./image/skybox/left.jpg", false);
+    unique_ptr<Image> cubeTop = Image::LoadOrNull("./image/skybox/top.jpg", false);
+    unique_ptr<Image> cubeBottom = Image::LoadOrNull("./image/skybox/bottom.jpg", false);
+    unique_ptr<Image> cubeFront = Image::LoadOrNull("./image/skybox/front.jpg", false);
+    unique_ptr<Image> cubeBack = Image::LoadOrNull("./image/skybox/back.jpg", false);
+    mCubeTexture = CubeTexture::CreateFromImages({
+        cubeRight.get(),
+        cubeLeft.get(),
+        cubeTop.get(),
+        cubeBottom.get(),
+        cubeFront.get(),
+        cubeBack.get(),
+    });
+    mWindowTexture = Texture::CreateFromImg(
+        Image::LoadOrNull("./image/blending_transparent_window.png").get()
+    );
+
+}
+void Context::InitModels()
+{
+    mBagModel = Model::LoadOrNull("./Model/backpack.obj");
+}
+
+bool Context::TryInit()
+{
+    InitPrograms();
+    InitMeshes();
+    InitMaterials();
+    InitTextures();
+    InitModels();
+    glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
     return true;
 }
 
@@ -316,7 +283,7 @@ void Context::Render()
         mCamUp
     );
 
-    auto skyboxModelTransform =
+    glm::highp_mat4 skyboxModelTransform =
         glm::translate(glm::mat4(1.0), mCamPos) *
         glm::scale(glm::mat4(1.0), glm::vec3(50.0f));
     mSkyboxProgram->Use();
@@ -367,20 +334,20 @@ void Context::Render()
             glm::translate(glm::mat4(1.0f), mLight.Pos) *
             glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-        mSimpleProgram->Use();
-        mSimpleProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-        mSimpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-        mBoxMesh->Draw(mSimpleProgram.get());
+        mSimpleColorProgram->Use();
+        mSimpleColorProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+        mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
+        mBoxMesh->Draw(mSimpleColorProgram.get());
     }
-    mProgram->Use();
-    mProgram->SetUniform("viewWorldPos", mCamPos);
-    mProgram->SetUniform("light.Pos", lightPos);
-    mProgram->SetUniform("light.Dir", lightDir);
-    mProgram->SetUniform("light.Cutoff", glm::vec2(cosf(glm::radians(mLight.Cutoff[0])), cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
-    mProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
-    mProgram->SetUniform("light.Ambient", mLight.Ambient);
-    mProgram->SetUniform("light.Diffuse", mLight.Diffuse);
-    mProgram->SetUniform("light.Specular", mLight.Specular);
+    mDefaultLightingProgram->Use();
+    mDefaultLightingProgram->SetUniform("viewWorldPos", mCamPos);
+    mDefaultLightingProgram->SetUniform("light.Pos", lightPos);
+    mDefaultLightingProgram->SetUniform("light.Dir", lightDir);
+    mDefaultLightingProgram->SetUniform("light.Cutoff", glm::vec2(cosf(glm::radians(mLight.Cutoff[0])), cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
+    mDefaultLightingProgram->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
+    mDefaultLightingProgram->SetUniform("light.Ambient", mLight.Ambient);
+    mDefaultLightingProgram->SetUniform("light.Diffuse", mLight.Diffuse);
+    mDefaultLightingProgram->SetUniform("light.Specular", mLight.Specular);
 
     // mProgram->SetUniform("material.Diffuse", 0);
     // mProgram->SetUniform("material.Specular", 1);
@@ -398,35 +365,35 @@ void Context::Render()
     //mModel->Draw(mProgram.get());
 
 
-    mProgram->Use();
+    mDefaultLightingProgram->Use();
     auto modelTransform =
         glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) *
         glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 10.0f));
     auto transform = projection * view * modelTransform;
-    mProgram->SetUniform("transform", transform);
-    mProgram->SetUniform("modelTransform", modelTransform);
-    mPlaneMaterial->SetToProgram(mProgram.get());
-    mBoxMesh->Draw(mProgram.get());
+    mDefaultLightingProgram->SetUniform("transform", transform);
+    mDefaultLightingProgram->SetUniform("modelTransform", modelTransform);
+    mPlaneMaterial->SetToProgram(mDefaultLightingProgram.get());
+    mBoxMesh->Draw(mDefaultLightingProgram.get());
 
     modelTransform =
         glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.75f, -4.0f)) *
         glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
     transform = projection * view * modelTransform;
-    mProgram->SetUniform("transform", transform);
-    mProgram->SetUniform("modelTransform", modelTransform);
-    mBox1Material->SetToProgram(mProgram.get());
-    mBoxMesh->Draw(mProgram.get());
+    mDefaultLightingProgram->SetUniform("transform", transform);
+    mDefaultLightingProgram->SetUniform("modelTransform", modelTransform);
+    mBox1Material->SetToProgram(mDefaultLightingProgram.get());
+    mBoxMesh->Draw(mDefaultLightingProgram.get());
 
     modelTransform =
         glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.75f, 2.0f)) *
         glm::rotate(glm::mat4(1.0f), glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
         glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
     transform = projection * view * modelTransform;
-    mProgram->SetUniform("transform", transform);
-    mProgram->SetUniform("modelTransform", modelTransform);
-    mBox2Material->SetToProgram(mProgram.get());
-    mBoxMesh->Draw(mProgram.get());
+    mDefaultLightingProgram->SetUniform("transform", transform);
+    mDefaultLightingProgram->SetUniform("modelTransform", modelTransform);
+    mBox2Material->SetToProgram(mDefaultLightingProgram.get());
+    mBoxMesh->Draw(mDefaultLightingProgram.get());
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

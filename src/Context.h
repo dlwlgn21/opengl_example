@@ -27,8 +27,14 @@ public:
 private:
     Context() = default;
     bool TryInit();
-    std::unique_ptr<Program> mProgram;
-    std::unique_ptr<Program> mSimpleProgram;
+    void InitPrograms();
+    void InitMeshes();
+    void InitMaterials();
+    void InitTextures();
+    void InitModels();
+
+    std::unique_ptr<Program> mDefaultLightingProgram;
+    std::unique_ptr<Program> mSimpleColorProgram;
     std::unique_ptr<Program> mTextureProgram;
     std::unique_ptr<Program> mPostProgram;
     std::unique_ptr<Program> mSkyboxProgram;
@@ -37,6 +43,8 @@ private:
 
     std::unique_ptr<Mesh> mBoxMesh;
     std::unique_ptr<Mesh> mPlaneMesh;
+
+
     std::unique_ptr<Texture> mWindowTexture;
     std::unique_ptr<CubeTexture> mCubeTexture;
 
