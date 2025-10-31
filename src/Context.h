@@ -38,6 +38,7 @@ private:
     std::unique_ptr<Program> mTextureProgram;
     std::unique_ptr<Program> mPostProgram;
     std::unique_ptr<Program> mSkyboxProgram;
+    std::unique_ptr<Program> mEnvmapProgram;
 
     float mGamma {1.0f};
 

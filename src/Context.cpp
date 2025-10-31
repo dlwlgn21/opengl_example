@@ -130,6 +130,13 @@ void Context::InitPrograms()
     {
         SPDLOG_INFO("Failed to create SkyBoxProgram");
     }
+
+    mEnvmapProgram = Program::CreateOrNull("./shader/Envmap.vs", "./shader/Envmap.fs");
+    if (mEnvmapProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create EnvmapProgram");
+    }
+
 }
 void Context::InitMeshes()
 {
@@ -292,6 +299,9 @@ void Context::Render()
     mSkyboxProgram->SetUniform("transform", projection * view * skyboxModelTransform);
     mBoxMesh->Draw(mSkyboxProgram.get());
 
+
+
+
     // mProgram->Use();
     // mProgram->SetUniform("viewWorldPos", mCamPos);
     // mProgram->SetUniform("light.Pos", mLight.Pos);
@@ -394,6 +404,22 @@ void Context::Render()
     mDefaultLightingProgram->SetUniform("modelTransform", modelTransform);
     mBox2Material->SetToProgram(mDefaultLightingProgram.get());
     mBoxMesh->Draw(mDefaultLightingProgram.get());
+
+    modelTransform =
+        glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.75f, -2.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+    mEnvmapProgram->Use();
+    mEnvmapProgram->SetUniform("model", modelTransform);
+    mEnvmapProgram->SetUniform("view", view);
+    mEnvmapProgram->SetUniform("projection", projection);
+    mEnvmapProgram->SetUniform("cameraPos", mCamPos);
+    mCubeTexture->Bind();
+    mEnvmapProgram->SetUniform("skybox", 0);
+    mBoxMesh->Draw(mEnvmapProgram.get());
+
+
+
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
