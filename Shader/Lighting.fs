@@ -25,6 +25,7 @@ struct Material
     float Shininess;
 };
 uniform Material material;
+uniform int isBlinnShading;
 
 void main()
 {
@@ -46,9 +47,25 @@ void main()
         vec3 diffuse = diff * texColor * light.Diffuse;
 
         vec3 specColor = texture2D(material.Specular, TexCoord).xyz;
+        float spec = 0.0;
+        if (isBlinnShading == 1)
+        {
+            vec3 viewDir = normalize(viewWorldPos - WorldPos);
+            vec3 halfDir = normalize(lightDir + viewDir);
+            spec = pow(max(dot(pixelNorm, halfDir), 0.0), material.Shininess);
+        }
+        else
+        {
+            vec3 viewDir = normalize(viewWorldPos - WorldPos);
+            vec3 reflectDir = reflect(-lightDir, pixelNorm);
+            spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
+        }
+    
+
+
         vec3 viewDir = normalize(viewWorldPos - WorldPos);
         vec3 reflectDir = reflect(-lightDir, pixelNorm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
+        //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
         vec3 specular = spec * specColor * light.Specular;
         result += (diffuse + specular) * intensity;
     }

@@ -72,6 +72,8 @@ private:
 
     glm::vec4 mClearColor { glm::vec4(0.0f, 0.0f, 0.0f, 0.0f) };
 
+    bool mIsBlinnShading {};
+
     bool mIsFlashLight {};
     bool mIsCamControl {};
     glm::vec2 mPrevMousePos { glm::vec2(0.0f) };

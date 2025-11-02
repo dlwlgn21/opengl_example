@@ -172,7 +172,7 @@ void Context::InitMaterials()
         Image::LoadOrNull("./image/marble.jpg").get()
     );
     mPlaneMaterial->Specular = move(grayTexture);
-    mPlaneMaterial->Shininess = 128.0f;
+    mPlaneMaterial->Shininess = 4.0f;
 
     mBox1Material = Material::Create();
     mBox1Material->Diffuse = Texture::CreateFromImg(
@@ -304,7 +304,7 @@ void Context::Render()
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(mLight.Diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
             ImGui::Checkbox("Is FlashLightMode", &mIsFlashLight);
-
+            ImGui::Checkbox("l.blinn shading", &mIsBlinnShading);
         }
         
         // if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
@@ -392,7 +392,9 @@ void Context::Render()
         mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
         mBoxMesh->Draw(mSimpleColorProgram.get());
     }
+    
     mDefaultLightingProgram->Use();
+    mDefaultLightingProgram->SetUniform("isBlinnShading", mIsBlinnShading ? 1 : 0);
     mDefaultLightingProgram->SetUniform("viewWorldPos", mCamPos);
     mDefaultLightingProgram->SetUniform("light.Pos", lightPos);
     mDefaultLightingProgram->SetUniform("light.Dir", lightDir);
@@ -448,62 +450,24 @@ void Context::Render()
     mBox2Material->SetToProgram(mDefaultLightingProgram.get());
     mBoxMesh->Draw(mDefaultLightingProgram.get());
 
-    modelTransform =
-        glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.75f, -2.0f)) *
-        glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
-        glm::scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
-    mEnvmapProgram->Use();
-    mEnvmapProgram->SetUniform("model", modelTransform);
-    mEnvmapProgram->SetUniform("view", view);
-    mEnvmapProgram->SetUniform("projection", projection);
-    mEnvmapProgram->SetUniform("cameraPos", mCamPos);
-    mCubeTexture->Bind();
-    mEnvmapProgram->SetUniform("skybox", 0);
-    mBoxMesh->Draw(mEnvmapProgram.get());
 
-
-
-    glEnable(GL_BLEND);
-    mGrassProgram->Use();
-    mGrassProgram->SetUniform("tex", 0);
-    mGrassTexture->Bind();
-    mGrassInstanceLayout->Bind();
-    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
-    transform = projection * view * modelTransform;
-    mGrassProgram->SetUniform("transform", transform);
-    glDrawElementsInstanced(
-        GL_TRIANGLES,
-        mPlaneMesh->GetIndexBuffer()->GetCount(),
-        GL_UNSIGNED_INT, 
-        0,
-        mGrassPosBuffer->GetCount()
-    );
-
-
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    mTextureProgram->Use();
-    mWindowTexture->Bind();
-    mTextureProgram->SetUniform("texSampler", 0);
-
-    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 4.0f));
-    transform = projection * view * modelTransform;
-    mTextureProgram->SetUniform("transform", transform);
-    mPlaneMesh->Draw(mTextureProgram.get());
-
-    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.2f, 0.5f, 5.0f));
-    transform = projection * view * modelTransform;
-    mTextureProgram->SetUniform("transform", transform);
-    mPlaneMesh->Draw(mTextureProgram.get());
-
-    modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.4f, 0.5f, 6.0f));
-    transform = projection * view * modelTransform;
-    mTextureProgram->SetUniform("transform", transform);
-    mPlaneMesh->Draw(mTextureProgram.get());
-
-
+    #pragma region Grass Instancing
+    // glEnable(GL_BLEND);
+    // mGrassProgram->Use();
+    // mGrassProgram->SetUniform("tex", 0);
+    // mGrassTexture->Bind();
+    // mGrassInstanceLayout->Bind();
+    // modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));
+    // transform = projection * view * modelTransform;
+    // mGrassProgram->SetUniform("transform", transform);
+    // glDrawElementsInstanced(
+    //     GL_TRIANGLES,
+    //     mPlaneMesh->GetIndexBuffer()->GetCount(),
+    //     GL_UNSIGNED_INT, 
+    //     0,
+    //     mGrassPosBuffer->GetCount()
+    // );
+    #pragma endregion
 
     Framebuffer::BindToDefault();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
