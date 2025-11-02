@@ -11,6 +11,7 @@
 #include "Model.h"
 #include "FrameBuffer.h"
 #include "CubeTexture.h"
+#include "ShadowMap.h"
 
 CLASS_PTR(Context)
 class Context
@@ -28,6 +29,7 @@ public:
     FORCEINLINE void DrawSkybox(const glm::mat4& view, const glm::mat4& projection) const;
     FORCEINLINE void DrawScene(const glm::mat4& view, const glm::mat4& projection, const Program* program) const;
     FORCEINLINE void DrawToFramebuffer(const Program* program) const;
+    FORCEINLINE void DrawShadowMap(const Program* program);
 private:
     Context() = default;
     bool TryInit();
@@ -45,6 +47,8 @@ private:
     std::unique_ptr<Program> mSkyboxProgram;
     std::unique_ptr<Program> mEnvmapProgram;
     std::unique_ptr<Program> mGrassProgram;
+    std::unique_ptr<Program> mLightingShadowProgram;
+
 
     float mGamma {1.0f};
 
@@ -55,6 +59,7 @@ private:
     std::unique_ptr<Texture> mWindowTexture;
     std::unique_ptr<Texture> mGrassTexture;
     std::unique_ptr<CubeTexture> mCubeTexture;
+    std::unique_ptr<ShadowMap> mShadowMap;
 
     std::unique_ptr<Model> mBagModel;
     std::unique_ptr<Material> mPlaneMaterial;
@@ -76,7 +81,11 @@ private:
 
     glm::vec4 mClearColor { glm::vec4(0.0f, 0.0f, 0.0f, 0.0f) };
 
-    bool mIsBlinnShading {};
+
+    glm::highp_mat4 mLightView;
+    glm::highp_mat4 mLightProjection;
+
+    bool mIsBlinnShading { true };
 
     bool mIsFlashLight {};
     bool mIsCamControl {};
@@ -87,10 +96,10 @@ private:
     struct Light
     {
         //glm::vec3 Direction { glm::vec3(-0.2f, -1.0f, -0.3f) };
-        glm::vec3 Pos { glm::vec3(1.0f, 4.0f, 4.0f) };
-        glm::vec3 Dir { glm::vec3(-1.0f, -1.0f, -1.0f) };
-        glm::vec2 Cutoff { glm::vec2(120.0f, 5.0f) }; 
-        float Dist { 128.0f };
+        glm::vec3 Pos { glm::vec3(2.0f, 4.0f, 4.0f) };
+        glm::vec3 Dir { glm::vec3(-0.5f, -1.5f, -1.0f) };
+        glm::vec2 Cutoff { glm::vec2(50.0f, 5.0f) }; 
+        float Dist { 150.0f };
         glm::vec3 Ambient { glm::vec3(0.1f, 0.1f, 0.1f) };
         glm::vec3 Diffuse { glm::vec3(0.8f, 0.8f, 0.8f) };
         glm::vec3 Specular { glm::vec3(1.0f, 1.0f, 1.0f) };

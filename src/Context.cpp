@@ -143,6 +143,11 @@ void Context::InitPrograms()
         SPDLOG_INFO("Failed to create GrassProgram");
     }
 
+    mLightingShadowProgram = Program::CreateOrNull("./shader/LightingShadow.vs", "./shader/LightingShadow.fs");
+    if (mLightingShadowProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create LightingShadowProgram");
+    }
 }
 void Context::InitMeshes()
 {
@@ -220,11 +225,11 @@ void Context::InitTextures()
     mGrassTexture = Texture::CreateFromImg(
         Image::LoadOrNull("./image/grass.png").get()
     );
-
+    mShadowMap = ShadowMap::Create(1024, 1024);
 }
 void Context::InitModels()
 {
-    mBagModel = Model::LoadOrNull("./Model/backpack.obj");
+    //mBagModel = Model::LoadOrNull("./Model/backpack.obj");
 }
 void Context::InitEtc()
 {
@@ -277,21 +282,23 @@ void Context::Render()
     mFramebuffer->Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-
+    
     glm::highp_mat4 projection = glm::perspective(glm::radians(45.0f),
-        static_cast<float>(mWidth) / mHeight, 0.1f, 100.0f);
+    static_cast<float>(mWidth) / mHeight, 0.1f, 100.0f);
     mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
-                glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
+    glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
+    glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
     glm::highp_mat4 view = glm::lookAt(
         mCamPos, 
         mCamPos + mCamFront, 
         mCamUp
     );
-
-    DrawSkybox(view, projection);
-    SetLightingProgram(view, projection, mDefaultLightingProgram.get());
-    DrawScene(view, projection, mDefaultLightingProgram.get());
+    
+    DrawShadowMap(mSimpleColorProgram.get()); // -> Shadow Map FB
+    SetLightingProgram(view, projection, mLightingShadowProgram.get());
+    mFramebuffer->Bind();
+    DrawSkybox(view, projection); // -> Default FB
+    DrawScene(view, projection, mLightingShadowProgram.get());
     DrawToFramebuffer(mPostProgram.get());
 }
 
@@ -336,6 +343,12 @@ void Context::DrawImGui()
         //     ImGui::DragFloat("m.shininess", &mBagMaterial->Shininess, 1.0f, 1.0f, 256.0f);
         // }
         ImGui::Checkbox("animation", &mIsAnimation);
+        ImGui::Image(
+            (ImTextureID)mShadowMap->GetShadowMap()->GetId(),
+            ImVec2(256, 256),
+            ImVec2(0, 1),
+            ImVec2(1, 0)
+        );
     }
     ImGui::End();
 }
@@ -343,27 +356,34 @@ void Context::SetLightingProgram(const glm::mat4& view, const glm::mat4& project
 {
     glm::vec3 lightPos = mIsFlashLight ? mCamPos : mLight.Pos;
     glm::vec3 lightDir = mIsFlashLight ? mCamFront : mLight.Dir;
-    if (!mIsFlashLight)
-    {
-        glm::highp_mat4 lightModelTransform = 
-            glm::translate(glm::mat4(1.0f), mLight.Pos) *
-            glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    //if (!mIsFlashLight)
+    //{
+        // glm::highp_mat4 lightModelTransform = 
+        //     glm::translate(glm::mat4(1.0f), mLight.Pos) *
+        //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-        mSimpleColorProgram->Use();
-        mSimpleColorProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-        mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
-        mBoxMesh->Draw(mSimpleColorProgram.get());
-    }
+        // mSimpleColorProgram->Use();
+        // mSimpleColorProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+        // mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
+        // mBoxMesh->Draw(mSimpleColorProgram.get());
+    //}
     program->Use();
-    program->SetUniform("isBlinnShading", mIsBlinnShading ? 1 : 0);
-    program->SetUniform("viewWorldPos", mCamPos);
-    program->SetUniform("light.Pos", lightPos);
-    program->SetUniform("light.Dir", lightDir);
-    program->SetUniform("light.Cutoff", glm::vec2(cosf(glm::radians(mLight.Cutoff[0])), cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
-    program->SetUniform("light.Att", GetAttCoeff(mLight.Dist));
-    program->SetUniform("light.Ambient", mLight.Ambient);
-    program->SetUniform("light.Diffuse", mLight.Diffuse);
-    program->SetUniform("light.Specular", mLight.Specular);
+    program->SetUniform("viewPos", mCamPos);
+    program->SetUniform("light.position", mLight.Pos);
+    program->SetUniform("light.direction", mLight.Dir);
+    program->SetUniform("light.cutoff", glm::vec2(
+        cosf(glm::radians(mLight.Cutoff[0])),
+        cosf(glm::radians(mLight.Cutoff[0] + mLight.Cutoff[1]))));
+    program->SetUniform("light.attenuation", GetAttCoeff(mLight.Dist));
+    program->SetUniform("light.ambient", mLight.Ambient);
+    program->SetUniform("light.diffuse", mLight.Diffuse);
+    program->SetUniform("light.specular", mLight.Specular);
+    program->SetUniform("isBlinnShading", (mIsBlinnShading ? 1 : 0));
+    program->SetUniform("lightTransform", mLightProjection * mLightView);
+    glActiveTexture(GL_TEXTURE3);
+    mShadowMap->GetShadowMap()->Bind();
+    program->SetUniform("shadowMap", 3);
+    glActiveTexture(GL_TEXTURE0);
 }
 
 void Context::DrawSkybox(const glm::mat4& view, const glm::mat4& projection) const
@@ -376,6 +396,35 @@ void Context::DrawSkybox(const glm::mat4& view, const glm::mat4& projection) con
     mSkyboxProgram->SetUniform("skybox", 0);
     mSkyboxProgram->SetUniform("transform", projection * view * skyboxModelTransform);
     mBoxMesh->Draw(mSkyboxProgram.get());
+}
+void Context::DrawShadowMap(const Program* program)
+{
+    mLightView = glm::lookAt(
+        mLight.Pos,
+        mLight.Pos + mLight.Dir,
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    mLightProjection = glm::perspective(
+        glm::radians((mLight.Cutoff[0] + mLight.Cutoff[1]) * 2.0f),
+        1.0f, 
+        1.0f, 
+        20.0f
+    );
+
+    mShadowMap->Bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(
+        0, 
+        0,
+        mShadowMap->GetShadowMap()->GetWidth(),
+        mShadowMap->GetShadowMap()->GetHeight()
+    );
+    program->Use();
+    program->SetUniform("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    DrawScene(mLightView, mLightProjection, program);
+
+    Framebuffer::BindToDefault();
+    glViewport(0, 0, mWidth, mHeight);
 }
 
 void Context::DrawScene(const glm::mat4& view, const glm::mat4& projection, const Program* program) const

@@ -27,6 +27,7 @@ add_executable(${PROJECT_NAME}
     src/Model.h src/Model.cpp
     src/FrameBuffer.h src/FrameBuffer.cpp
     src/CubeTexture.h src/CubeTexture.cpp
+    src/ShadowMap.h src/ShadowMap.cpp
 )
 
 # 파이썬 경로를 Dependency 쪽으로 넘겨줄 변수에 저장

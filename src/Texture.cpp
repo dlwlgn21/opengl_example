@@ -11,6 +11,14 @@ unique_ptr<Texture> Texture::CreateEmptyTexture(int width, int height, uint32_t 
     return std::move(tex);
 }
 
+unique_ptr<Texture> Texture::Create(int width, int height, uint32_t format, uint32_t type)
+{
+    unique_ptr<Texture> texture = unique_ptr<Texture>(new Texture());
+    texture->CreateTexture();
+    texture->SetTextureFormat(width, height, format, type);
+    texture->SetFilter(GL_LINEAR, GL_LINEAR);
+    return std::move(texture);
+}
 
 unique_ptr<Texture> Texture::CreateFromImg(const Image* pImg)
 {
@@ -67,7 +75,24 @@ void Texture::SetTextureFormat(int width, int height, uint32_t format)
         nullptr
     );
 }
-
+void Texture::SetTextureFormat(int width, int height, uint32_t format, uint32_t type)
+{
+    mWidth = width;
+    mHeight = height;
+    mFormat = format;
+    mType = type;
+    glTexImage2D(
+        GL_TEXTURE_2D, 
+        0, 
+        mFormat,
+        mWidth, 
+        mHeight, 
+        0,
+        mFormat, 
+        mType,
+        nullptr
+    );
+}
 
 void Texture::SetTextureFromImg(const Image* pImg)
 {
@@ -83,6 +108,7 @@ void Texture::SetTextureFromImg(const Image* pImg)
 	mWidth = pImg->GetWidth();
     mHeight = pImg->GetHeight();
     mFormat = format;
+    mType = GL_UNSIGNED_BYTE;
     glTexImage2D(
         GL_TEXTURE_2D,      // Target
         0,                  // GPU 쪽의 텍스쳐 데이터 기술 - Mip-Map 레벨값
@@ -91,7 +117,7 @@ void Texture::SetTextureFromImg(const Image* pImg)
         mHeight,            // GPU 쪽의 텍스쳐 데이터 기술
         0,                  // GPU 쪽의 텍스쳐 데이터 기술 - Border size
         mFormat,            // CPU 할당된 이미지 데이터 기술 - image의 픽셀 타입. 채널
-        GL_UNSIGNED_BYTE,   // CPU 할당된 이미지 데이터 기술 - image가 하나의 채널을 표현하는데 쓰는 데이터 타입
+        mType,              // CPU 할당된 이미지 데이터 기술 - image가 하나의 채널을 표현하는데 쓰는 데이터 타입
         pImg->GetData()     // CPU 할당된 이미지 데이터 기술 - 실제 데이터가 들어가 있는 포인터 넘겨줌
     );
     glGenerateMipmap(GL_TEXTURE_2D);
