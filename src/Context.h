@@ -23,7 +23,11 @@ public:
 
     void OnMouseMove(double x, double y);
     void OnMouseButton(int btn, int action, double x, double y);
-
+    FORCEINLINE void DrawImGui();
+    FORCEINLINE void SetLightingProgram(const glm::mat4& view, const glm::mat4& projection, const Program* program) const;
+    FORCEINLINE void DrawSkybox(const glm::mat4& view, const glm::mat4& projection) const;
+    FORCEINLINE void DrawScene(const glm::mat4& view, const glm::mat4& projection, const Program* program) const;
+    FORCEINLINE void DrawToFramebuffer(const Program* program) const;
 private:
     Context() = default;
     bool TryInit();
