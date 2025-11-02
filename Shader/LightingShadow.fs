@@ -31,8 +31,20 @@ uniform Material material;
 uniform int isBlinnShading;
 uniform sampler2D shadowMap;
 
-float ShadowCalculation(vec4 fragPosLight) {
-  return 0.0;
+float ShadowCalculation(vec4 fragPosLight, vec3 normal, vec3 lightDir) {
+    // perform perspective divide
+    vec3 projCoords = fragPosLight.xyz / fragPosLight.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light’s perspective (using
+    // [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    // get depth of current fragment from light’s perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    return shadow;
 }
 
 void main()
@@ -72,7 +84,7 @@ void main()
             spec = pow(max(dot(halfDir, pixelNorm), 0.0), material.Shininess);
         }
         vec3 specular = spec * specColor * light.specular;
-        float shadow = ShadowCalculation(fs_in.FragPosLight);
+        float shadow = ShadowCalculation(fs_in.FragPosLight, pixelNorm, lightDir);
 
         result += (diffuse + specular) * intensity * (1.0 - shadow);
     }

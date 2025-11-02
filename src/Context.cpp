@@ -279,6 +279,8 @@ bool Context::TryInit()
 void Context::Render()
 {
     DrawImGui();
+    DrawShadowMap(mSimpleColorProgram.get()); // -> Shadow Map FB
+
     mFramebuffer->Bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -294,7 +296,7 @@ void Context::Render()
         mCamUp
     );
     
-    DrawShadowMap(mSimpleColorProgram.get()); // -> Shadow Map FB
+    //DrawShadowMap(mSimpleColorProgram.get()); // -> Shadow Map FB
     SetLightingProgram(view, projection, mLightingShadowProgram.get());
     mFramebuffer->Bind();
     DrawSkybox(view, projection); // -> Default FB
@@ -356,17 +358,17 @@ void Context::SetLightingProgram(const glm::mat4& view, const glm::mat4& project
 {
     glm::vec3 lightPos = mIsFlashLight ? mCamPos : mLight.Pos;
     glm::vec3 lightDir = mIsFlashLight ? mCamFront : mLight.Dir;
-    //if (!mIsFlashLight)
-    //{
-        // glm::highp_mat4 lightModelTransform = 
-        //     glm::translate(glm::mat4(1.0f), mLight.Pos) *
-        //     glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+    if (!mIsFlashLight)
+    {
+        glm::highp_mat4 lightModelTransform = 
+            glm::translate(glm::mat4(1.0f), mLight.Pos) *
+            glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
-        // mSimpleColorProgram->Use();
-        // mSimpleColorProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
-        // mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
-        // mBoxMesh->Draw(mSimpleColorProgram.get());
-    //}
+        mSimpleColorProgram->Use();
+        mSimpleColorProgram->SetUniform("color", glm::vec4(mLight.Ambient + mLight.Diffuse, 1.0f));
+        mSimpleColorProgram->SetUniform("transform", projection * view * lightModelTransform);
+        mBoxMesh->Draw(mSimpleColorProgram.get());
+    }
     program->Use();
     program->SetUniform("viewPos", mCamPos);
     program->SetUniform("light.position", mLight.Pos);
