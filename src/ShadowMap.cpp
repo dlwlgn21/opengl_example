@@ -32,7 +32,7 @@ bool ShadowMap::TryInit(int width, int height)
 
     mShadowMap = Texture::Create(width, height, GL_DEPTH_COMPONENT, GL_FLOAT);
     mShadowMap->SetFilter(GL_NEAREST, GL_NEAREST);
-    mShadowMap->SetWrapMode(GL_REPEAT, GL_REPEAT);
+    mShadowMap->SetWrapMode(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,

@@ -338,6 +338,7 @@ void Context::DrawImGui()
             ImGui::ColorEdit3("l.specular", glm::value_ptr(mLight.Specular));
             ImGui::Checkbox("Is FlashLightMode", &mIsFlashLight);
             ImGui::Checkbox("l.blinn shading", &mIsBlinnShading);
+            ImGui::Checkbox("l.directional", &mLight.IsDirectional);
         }
         
         // if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) 
@@ -371,6 +372,7 @@ void Context::SetLightingProgram(const glm::mat4& view, const glm::mat4& project
     }
     program->Use();
     program->SetUniform("viewPos", mCamPos);
+    program->SetUniform("light.directional", mLight.IsDirectional ? 1 : 0);
     program->SetUniform("light.position", mLight.Pos);
     program->SetUniform("light.direction", mLight.Dir);
     program->SetUniform("light.cutoff", glm::vec2(
@@ -406,7 +408,9 @@ void Context::DrawShadowMap(const Program* program)
         mLight.Pos + mLight.Dir,
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
-    mLightProjection = glm::perspective(
+    mLightProjection = mLight.IsDirectional ? 
+    glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 30.0f) : 
+    glm::perspective(
         glm::radians((mLight.Cutoff[0] + mLight.Cutoff[1]) * 2.0f),
         1.0f, 
         1.0f, 

@@ -96,6 +96,7 @@ private:
     struct Light
     {
         //glm::vec3 Direction { glm::vec3(-0.2f, -1.0f, -0.3f) };
+        bool IsDirectional { true };
         glm::vec3 Pos { glm::vec3(2.0f, 4.0f, 4.0f) };
         glm::vec3 Dir { glm::vec3(-0.5f, -1.5f, -1.0f) };
         glm::vec2 Cutoff { glm::vec2(50.0f, 5.0f) }; 
