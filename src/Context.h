@@ -48,6 +48,9 @@ private:
     std::unique_ptr<Program> mEnvmapProgram;
     std::unique_ptr<Program> mGrassProgram;
     std::unique_ptr<Program> mLightingShadowProgram;
+    
+    std::unique_ptr<Program> mDeferGeoProgram;
+    std::unique_ptr<Framebuffer> mDeferGeoFramebuffer;
 
 
     float mGamma {1.0f};
@@ -116,6 +119,7 @@ private:
     // };
 
     std::unique_ptr<Framebuffer> mFramebuffer;
+
     std::unique_ptr<Buffer> mGrassPosBuffer;
     std::unique_ptr<VertexLayout> mGrassInstanceLayout;
     std::vector<glm::vec3> mGrassPositions;

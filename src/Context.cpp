@@ -103,6 +103,13 @@ void Context::Reshape(int width, int height)
         Texture::CreateEmptyTexture(width, height, GL_RGBA)
     );
     mFramebuffer = Framebuffer::CreateOrNull(textures);
+
+    std::vector<std::unique_ptr<Texture>> geoTextures;
+    geoTextures.reserve(3);
+    geoTextures.push_back(Texture::Create(width, height, GL_RGBA16F, GL_FLOAT)); // position
+    geoTextures.push_back(Texture::Create(width, height, GL_RGBA16F, GL_FLOAT)); // normal
+    geoTextures.push_back(Texture::Create(width, height, GL_RGBA, GL_UNSIGNED_BYTE));
+    mDeferGeoFramebuffer = Framebuffer::CreateOrNull(geoTextures);
 }
 
 void Context::InitPrograms()
@@ -149,6 +156,11 @@ void Context::InitPrograms()
     if (mLightingShadowProgram == nullptr)
     {
         SPDLOG_INFO("Failed to create LightingShadowProgram");
+    }
+    mDeferGeoProgram = Program::CreateOrNull("./shader/DeferGeo.vs", "./shader/DeferGeo.fs");
+    if (mDeferGeoProgram == nullptr)
+    {
+        SPDLOG_INFO("Failed to create DeferGeoProgram");
     }
 }
 void Context::InitMeshes()
@@ -356,6 +368,24 @@ void Context::DrawImGui()
         );
     }
     ImGui::End();
+    if (ImGui::Begin("G-Buffers"))
+    {
+        const char* bufferNames[] = { "position", "normal", "albedo/specular" };
+        static int bufferSelect = 0;
+        ImGui::Combo("buffer", &bufferSelect, bufferNames, 3);
+        float width = ImGui::GetContentRegionAvailWidth();
+        float height = width * ((float)mHeight / (float)mWidth);
+        const Texture* selectedAttachment = mDeferGeoFramebuffer->GetColorAttachmentAt(bufferSelect);
+        ImGui::Image(
+            (ImTextureID)selectedAttachment->GetId(),
+            ImVec2(width, height), 
+            ImVec2(0, 1), 
+            ImVec2(1, 0)
+        );
+    }
+    ImGui::End();
+
+    
 }
 void Context::SetLightingProgram(const glm::mat4& view, const glm::mat4& projection, const Program* program) const
 {
@@ -405,6 +435,16 @@ void Context::DrawSkybox(const glm::mat4& view, const glm::mat4& projection) con
 }
 void Context::DrawShadowMap(const Program* program)
 {
+    glm::highp_mat4 projection = glm::perspective(glm::radians(45.0f),
+    static_cast<float>(mWidth) / mHeight, 0.1f, 100.0f);
+    mCamFront = glm::rotate(glm::mat4(1.0f), glm::radians(mCamYaw), glm::vec3(0.0f, 1.0f, 0.0f)) *
+    glm::rotate(glm::mat4(1.0f), glm::radians(mCamPitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
+    glm::vec4(0.0f, 0.0f, -1.0f, 0.0f); // 벡터기 때문에 마지막에 0 집어넣음, 평행이동이 안됨
+    glm::highp_mat4 view = glm::lookAt(
+        mCamPos, 
+        mCamPos + mCamFront, 
+        mCamUp
+    );
     mLightView = glm::lookAt(
         mLight.Pos,
         mLight.Pos + mLight.Dir,
@@ -431,8 +471,16 @@ void Context::DrawShadowMap(const Program* program)
     program->SetUniform("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     DrawScene(mLightView, mLightProjection, program);
 
+    mDeferGeoFramebuffer->Bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, mWidth, mHeight);
+    mDeferGeoProgram->Use();
+    DrawScene(view, projection, mDeferGeoProgram.get());
+
     Framebuffer::BindToDefault();
     glViewport(0, 0, mWidth, mHeight);
+    glClearColor(mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a);
 }
 
 void Context::DrawScene(const glm::mat4& view, const glm::mat4& projection, const Program* program) const
