@@ -98,9 +98,11 @@ void Context::Reshape(int width, int height)
     mWidth = width;
     mHeight = height;
     glViewport(0, 0, mWidth, mHeight);
-    mFramebuffer = Framebuffer::CreateOrNull(
+    std::vector<std::unique_ptr<Texture>> textures;
+    textures.push_back(
         Texture::CreateEmptyTexture(width, height, GL_RGBA)
     );
+    mFramebuffer = Framebuffer::CreateOrNull(textures);
 }
 
 void Context::InitPrograms()
@@ -487,6 +489,6 @@ void Context::DrawToFramebuffer(const Program* program) const
     program->SetUniform("transform",
         glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)));
     program->SetUniform("gamma", mGamma);
-    mFramebuffer->GetColorAttachment()->Bind();
+    mFramebuffer->GetColorAttachmentAt(0)->Bind();
     mPlaneMesh->Draw(mPostProgram.get());
 }

@@ -81,6 +81,15 @@ void Texture::SetTextureFormat(int width, int height, uint32_t format, uint32_t 
     mHeight = height;
     mFormat = format;
     mType = type;
+    GLenum imageFormat = GL_RGBA;
+    if (mFormat == GL_DEPTH_COMPONENT) 
+    {
+        imageFormat = GL_DEPTH_COMPONENT;        
+    }
+    else if (mFormat == GL_RGB || mFormat == GL_RGB16F || mFormat == GL_RGB32F) 
+    {
+        imageFormat = GL_RGB;
+    }
     glTexImage2D(
         GL_TEXTURE_2D, 
         0, 
@@ -88,7 +97,7 @@ void Texture::SetTextureFormat(int width, int height, uint32_t format, uint32_t 
         mWidth, 
         mHeight, 
         0,
-        mFormat, 
+        imageFormat, 
         mType,
         nullptr
     );
